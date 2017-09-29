@@ -39,13 +39,13 @@ import com.sios.stc.coseng.integration.versionone.VersionOne;
 import com.sios.stc.coseng.util.Resource;
 
 /**
- * The Class GetIntegrators for deserializing integrator configuration resources
+ * The Class IIntegrator for deserializing integrator configuration resources
  * and validating the parameters.
  * 
  * @since 3.0
  * @version.coseng
  */
-class GetIntegrators {
+class Integrators {
 
     private static final Logger log = LogManager.getLogger(RunTests.class.getName());
 
@@ -66,7 +66,7 @@ class GetIntegrators {
      * @since 3.0
      * @version.coseng
      */
-    protected static List<Integrator> wired() {
+    protected static List<Integrator> getWired() {
         return wiredIntegrators;
     }
 

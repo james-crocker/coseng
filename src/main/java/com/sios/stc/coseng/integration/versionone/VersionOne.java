@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.NullArgumentException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,7 +34,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
-import com.sios.stc.coseng.Common;
 import com.sios.stc.coseng.RunTests;
 import com.sios.stc.coseng.integration.Integrator;
 import com.sios.stc.coseng.run.CosengException;
@@ -78,7 +77,7 @@ public class VersionOne extends Integrator {
     private static Configuration configuration;
     private static IAssetType    typeBacklog;
     private static IAssetType    typeTest;
-    private static String        backlogTitlePrefix = Common.STRING_EMPTY;
+    private static String        backlogTitlePrefix = StringUtils.EMPTY;
 
     /**
      * Instantiates a new version one.
@@ -613,9 +612,9 @@ public class VersionOne extends Integrator {
      * @version.coseng
      */
     private synchronized String getRelevantMethodName(String qualifiedMethodName) {
-        String relevantName = Common.STRING_EMPTY;
+        String relevantName = StringUtils.EMPTY;
         try {
-            relevantName = qualifiedMethodName.replace(PACKAGE_ROOT, Common.STRING_EMPTY);
+            relevantName = qualifiedMethodName.replace(PACKAGE_ROOT, StringUtils.EMPTY);
         } catch (Exception e) {
             // do nothing
         }

@@ -27,7 +27,9 @@ import org.testng.ITestNGListener;
 import org.testng.TestNG;
 
 import com.sios.stc.coseng.RunTests;
+import com.sios.stc.coseng.integration.IIntegrator;
 import com.sios.stc.coseng.integration.Integrator;
+import com.sios.stc.coseng.integration.Integrator.TriggerOn;
 
 /**
  * The Class Concurrent creates a runnable instance for a given COSENG test.
@@ -35,7 +37,7 @@ import com.sios.stc.coseng.integration.Integrator;
  * @since 2.0
  * @version.coseng
  */
-class Concurrent implements Runnable {
+class Concurrent implements Runnable, IIntegrator {
 
     private static final Logger log = LogManager.getLogger(RunTests.class.getName());
     private Test                test;
@@ -85,38 +87,51 @@ class Concurrent implements Runnable {
             /* Run the TestNG test */
             testNg.run();
             /* Test completed; mark test if failure */
-            if (testNg.hasFailure()) {
-                test.setIsFailed(true);
-            }
+            test.setIsFailed(testNg.hasFailure());
+            /* Save (and verify if allowed) all url */
+            Urls.saveAllFound(test);
             stopWatch.stop();
             log.info("Test [{}] completed; elapsed time (hh:mm:ss:ms) [{}]", name,
                     stopWatch.toString());
             notifyIntegrators(test, test.getReportDirectoryFile(), test.getResourceDirectory());
         } catch (Exception e) {
             test.setIsFailed(true);
-            throw new RuntimeException("Unable to execute TestNG run for test [" + name + "]", e);
+            throw new RuntimeException(
+                    "Unable to complete TestNG execution for test [" + name + "]", e);
         }
     }
 
-    /**
-     * Notify integrators.
-     *
-     * @param test
-     *            the test
-     * @param reportDirectory
-     *            the report directory
-     * @param resourceDirectory
-     *            the resource directory
-     * @since 3.0
-     * @version.coseng
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.sios.stc.coseng.integration.IIntegrator#notifyIntegrators(com.sios.
+     * stc.coseng.integration.Integrator.TriggerOn)
      */
-    private void notifyIntegrators(Test test, File reportDirectory, File resourceDirectory) {
-        for (Integrator i : GetIntegrators.wired()) {
+    @Override
+    public void notifyIntegrators(TriggerOn trigger) throws CosengException {
+        /* do nothing; used in CosengListener for TestNG state changes. */
+
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.sios.stc.coseng.integration.IIntegrator#notifyIntegrators(com.sios.
+     * stc.coseng.run.Test, java.io.File, java.io.File)
+     */
+    @Override
+    public void notifyIntegrators(Test test, File reportDirectory, File resourceDirectory)
+            throws CosengException {
+        for (Integrator i : Integrators.getWired()) {
             try {
                 i.attachReports(test, reportDirectory, resourceDirectory);
             } catch (CosengException e) {
-                log.error("Unable to attach test reports [{}] for integrator [{}]",
-                        test.getReportDirectory(), i.getClass().getName());
+                throw new CosengException(
+                        "Unable to attach test reports [" + test.getReportDirectory()
+                                + "] for integrator [" + i.getClass().getName() + "]",
+                        e);
             }
         }
     }

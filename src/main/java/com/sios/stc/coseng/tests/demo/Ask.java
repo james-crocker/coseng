@@ -32,7 +32,7 @@ public class Ask extends CosengRunner {
 
     @Test(description = "Verify connect to Ask and search")
     public void connect1() throws CosengException {
-        String url = "http://www.ask.com";
+        String url = "https://www.ask.com";
         String searchform = "search-box";
 
         /* Make sure a web driver for this thread */
@@ -54,28 +54,57 @@ public class Ask extends CosengRunner {
         weSearchForm.find();
         logAssert.assertTrue(weSearchForm.isDisplayed(), "search form element should be displayed");
 
-        logAssert.assertEquals(false, false, "should be equal");
-        logAssert.assertNotEquals("aa", "bb", "should not be equals");
-        logAssert.assertNotNull("aa", "should not be null");
-        logAssert.assertNull(null, "should be null");
-        logAssert.assertFalse(false, "should be false");
+        logTestStep("test assortment of soft assertions");
+        Boolean[] b1 = { false, false };
+        Boolean[] b2 = { true, true };
+        Boolean[] b3 = { false, true, false };
+        logSoftAssert.assertEquals(b1.length, b3.length);
+        logSoftAssert.assertEquals(b1.length, b3.length, "withMessage");
+        logSoftAssert.assertEquals(b1.length, b2.length);
+        logSoftAssert.assertEquals(b1.length, b2.length, "withMessage");
+        logSoftAssert.assertEqualsNoOrder(b1, b2);
+        logSoftAssert.assertEqualsNoOrder(b1, b2, "withMessage");
+        logSoftAssert.assertEqualsNoOrder(b1, b1);
+        logSoftAssert.assertEqualsNoOrder(b1, b1, "withMessage");
+        logSoftAssert.assertFalse(true);
+        logSoftAssert.assertFalse(true, "withMessage");
+        logSoftAssert.assertFalse(false);
+        logSoftAssert.assertFalse(false, "withMessage");
+        logSoftAssert.assertNotEquals("aa", "aa");
+        logSoftAssert.assertNotEquals("aa", "aa", "withMessage");
+        logSoftAssert.assertNotEquals("aa", "bb");
+        logSoftAssert.assertNotEquals("aa", "bb", "withMessage");
+        logSoftAssert.assertNotNull(null);
+        logSoftAssert.assertNotNull(null, "withMessage");
+        logSoftAssert.assertNotNull("aa");
+        logSoftAssert.assertNotNull("aa", "withMessage");
+        logSoftAssert.assertNotSame(b1, b1);
+        logSoftAssert.assertNotSame(b1, b1, "withMessage");
+        logSoftAssert.assertNotSame(b1, b2);
+        logSoftAssert.assertNotSame(b1, b2, "withMessage");
+        logSoftAssert.assertNull("aa");
+        logSoftAssert.assertNull("aa", "withMessage");
+        logSoftAssert.assertNull(null);
+        logSoftAssert.assertNull(null, "withMessage");
+        logSoftAssert.assertSame(b1, b2);
+        logSoftAssert.assertSame(b1, b2, "withMessage");
+        logSoftAssert.assertSame(b1, b1);
+        logSoftAssert.assertSame(b1, b1, "withMessage");
+        logSoftAssert.assertTrue(false);
+        logSoftAssert.assertTrue(false, "withMessage");
+        logSoftAssert.assertTrue(true);
+        logSoftAssert.assertTrue(true, "withMessage");
 
         /* Take a screenshot while were here */
-        logMessage("saving screenshot [ask-connect1]");
         saveScreenshot("ask-connect1");
 
         /* Find and save URLs on this route */
-        logMessage("finding URLs");
         findUrls();
-        logMessage("saving URLs");
-        saveUrls();
-        // urlsAccessible();
-
     }
 
     @Test(description = "Verify connect to Ask About and help button")
     public void connect2() throws CosengException {
-        String url = "http://about.ask.com";
+        String url = "https://about.ask.com";
         String helpButton = "/html/body/section/aside/button";
 
         /* Make sure a web driver for this thread */
@@ -98,15 +127,11 @@ public class Ask extends CosengRunner {
         logAssert.assertTrue(weHelpButton.isDisplayed(), "help button should be displayed");
 
         /* Take a screenshot while were here */
-        logMessage("saving screenshot [ask-connect2]");
         saveScreenshot("ask-connect2");
 
         /* Find and save URLs on this route */
-        logMessage("finding URLs");
         findUrls();
-        logMessage("saving URLs");
-        saveUrls();
-        // urlsAccessible();
+        logMessage("a message");
     }
 
 }

@@ -16,9 +16,10 @@
  */
 package com.sios.stc.coseng.integration.versionone;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.sios.stc.coseng.Common;
 
 /**
  * The Class Oid.
@@ -43,7 +44,7 @@ public class Oid {
         if (oid != null) {
             return oid;
         }
-        return Common.STRING_EMPTY;
+        return StringUtils.EMPTY;
     }
 
 }

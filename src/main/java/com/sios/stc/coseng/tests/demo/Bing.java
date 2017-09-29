@@ -60,9 +60,6 @@ public class Bing extends CosengRunner {
         /* Find and save URLs on this route */
         logMessage("finding URLs");
         findUrls();
-        logMessage("saving URLs");
-        saveUrls();
-        // urlsAccessible();
     }
 
     @Test(description = "Verify connect to Bing Help and search")
@@ -93,9 +90,6 @@ public class Bing extends CosengRunner {
         /* Find and save URLs on this route */
         logMessage("finding URLs");
         findUrls();
-        logMessage("saving URLs");
-        saveUrls();
-        // urlsAccessible();
     }
 
 }

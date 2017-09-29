@@ -121,6 +121,9 @@ public class Http {
      * @version.coseng
      */
     public static Integer getResponseCode(String url) {
+        if (!urlsResponseCode.containsKey(url)) {
+            isAccessible(url);
+        }
         return urlsResponseCode.get(url);
     }
 

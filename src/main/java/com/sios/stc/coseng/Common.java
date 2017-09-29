@@ -24,10 +24,10 @@ package com.sios.stc.coseng;
  */
 public class Common {
 
-    public static final String STRING_EMPTY            = "";
-    public static final String STRING_UNKNOWN          = "unknown";
-    public static final String LIST_SEPARATOR          = ", ";
-    public static final String STRING_ASSERTION_SUCESS = "success";
-    public static final String STRING_ASSERTION_FAIL   = "fail";
+    public static final String TESTNG_REPORT_COSENG_DIR = "coseng";
+    public static final String STRING_UNKNOWN           = "unknown";
+    public static final String STRING_NULL              = "null";
+    public static final String DEFAULT_LIST_SEPARATOR   = ", ";
+    public static final String FILENAME_SEPARATOR       = "_";
 
 }

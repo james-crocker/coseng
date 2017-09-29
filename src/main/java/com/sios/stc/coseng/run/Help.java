@@ -155,8 +155,17 @@ class Help {
         p.add(space(1, "allowFindUrls: (optional) boolean"));
         p.add(space(2, "Default [" + test.isAllowFindUrls() + "]"));
 
+        p.add(space(1, "allowVerifyUrls: (optional) boolean"));
+        p.add(space(2, "Default [" + test.isAllowVerifyUrls() + "]"));
+
+        p.add(space(1, "failTestOnFailVerifyUrls: (optional) boolean"));
+        p.add(space(2, "Default [" + test.isFailTestOnFailVerifyUrls() + "]"));
+
         p.add(space(1, "allowScreenshots: (optional) boolean"));
         p.add(space(2, "Default [" + test.isAllowScreenshots() + "]"));
+
+        p.add(space(1, "allowScreenshotOnAssertFailure: (optional) boolean"));
+        p.add(space(2, "Default [" + test.isAllowScreenshotOnAssertFailure() + "]"));
 
         p.add(space(1, "suites: (required) list of String"));
         p.add(space(2, "Default " + test.getSuites()));

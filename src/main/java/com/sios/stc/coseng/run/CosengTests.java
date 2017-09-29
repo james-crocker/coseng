@@ -32,11 +32,11 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.sios.stc.coseng.Common;
 import com.sios.stc.coseng.RunTests;
 import com.sios.stc.coseng.integration.versionone.VersionOne;
 import com.sios.stc.coseng.util.Resource;
@@ -246,7 +246,7 @@ public class CosengTests {
                         String jsonFileName = cli.getOptionValue(integration);
                         if (!jsonFileName.isEmpty()) {
                             Class<?> clazz = getAvailableIntegratorClass(integration);
-                            GetIntegrators.with(clazz, jsonFileName);
+                            Integrators.with(clazz, jsonFileName);
                         } else {
                             log.fatal("-" + integration + " <arg> required");
                             exitFailure = true;
@@ -302,7 +302,7 @@ public class CosengTests {
         if (hasAvailableIntegratorHelp(integration)) {
             return availableIntegratorsHelp.get(integration);
         }
-        return Common.STRING_EMPTY;
+        return StringUtils.EMPTY;
     }
 
     private static Set<String> getAvailableIntegrators() {

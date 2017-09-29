@@ -20,8 +20,10 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Platform;
@@ -96,68 +98,82 @@ public class Test implements IntegratorData {
     private static final int WEB_DRIVER_WAIT_TIMEOUT_SECONDS_DEFAULT     = 5;
     private static final int WEB_DRIVER_IMPLICIT_TIMEOUT_SECONDS_DEFAULT = 5;
 
-    private boolean        incognitoDefault          = false;
-    private boolean        acceptInvalidCertsDefault = false;
-    private boolean        oneWebDriverDefault       = false;
-    private boolean        angular2AppDefault        = false;
-    private boolean        allowFindUrlsDefault      = false;
-    private boolean        allowScreenshotsDefault   = false;
-    private boolean        browserMaximizeDefault    = false;
-    private List<XmlSuite> xmlSuites                 = new ArrayList<XmlSuite>();
-    private String         reportDirectory           = null;
-    private File           resourceDirectory         = null;
-    private boolean        failed                    = false;
-    private boolean        synthetic                 = false;
-    private File           webDriver                 = null;
-    private ISuite         testNgSuite               = null;
-    private ITestContext   testNgTest                = null;
-    private ITestClass     testNgClass               = null;
-    private IInvokedMethod testNgMethod              = null;
-    private int            testSuiteCount            = 0;
-    private List<Data>     integratorData            = new ArrayList<Data>();
+    private boolean        incognitoDefault                      = false;
+    private boolean        acceptInvalidCertsDefault             = false;
+    private boolean        oneWebDriverDefault                   = false;
+    private boolean        angular2AppDefault                    = false;
+    private boolean        allowFindUrlsDefault                  = false;
+    private boolean        allowVerifyUrlsDefault                = false;
+    private boolean        failTestOnFailVerifyUrlsDefault       = false;
+    private boolean        allowScreenshotsDefault               = false;
+    private boolean        allowScreenshotOnAssertFailureDefault = true;
+    private boolean        browserMaximizeDefault                = false;
+    private List<XmlSuite> xmlSuites                             = new ArrayList<XmlSuite>();
+    private String         reportDirectory                       = null;
+    private File           resourceDirectory                     = null;
+    private boolean        failed                                = false;
+    private boolean        synthetic                             = false;
+    private File           webDriver                             = null;
+    private ISuite         testNgSuite                           = null;
+    private ITestContext   testNgTest                            = null;
+    private ITestClass     testNgClass                           = null;
+    private IInvokedMethod testNgMethod                          = null;
+    private int            testSuiteCount                        = 0;
+    private List<Data>     integratorData                        = new ArrayList<Data>();
 
     @Expose
-    private String       name                        = null;
+    private String       name                           = null;
     @Expose
-    private Location     location                    = Location.NODE;
+    private Location     location                       = Location.NODE;
     @Expose
-    private Platform     platform                    = Platform.ANY;
+    private Platform     platform                       = Platform.ANY;
     @Expose
-    private Browser      browser                     = Browser.ALL;
+    private Browser      browser                        = Browser.ALL;
     @Expose
-    private List<String> suites                      = new ArrayList<String>();
+    private List<String> suites                         = new ArrayList<String>();
     @Expose
-    private String       baseUrl                     = null;
+    private String       baseUrl                        = null;
     @Expose
-    private String       gridUrl                     = null;
+    private String       gridUrl                        = null;
     @Expose
-    private boolean      oneWebDriver                = oneWebDriverDefault;
+    private boolean      oneWebDriver                   = oneWebDriverDefault;
     @Expose
-    private Integer      webDriverTimeoutSeconds     = WEB_DRIVER_WAIT_TIMEOUT_SECONDS_DEFAULT;
+    private Integer      webDriverTimeoutSeconds        = WEB_DRIVER_WAIT_TIMEOUT_SECONDS_DEFAULT;
     @Expose
-    private Integer      webDriverWaitTimeoutSeconds = WEB_DRIVER_IMPLICIT_TIMEOUT_SECONDS_DEFAULT;
+    private Integer      webDriverWaitTimeoutSeconds    =
+            WEB_DRIVER_IMPLICIT_TIMEOUT_SECONDS_DEFAULT;
     @Expose
-    private String       browserRequestVersion       = Browsers.BROWSER_VERSION_DEFAULT;
+    private String       browserRequestVersion          = Browsers.BROWSER_VERSION_DEFAULT;
     @Expose
-    private boolean      browserHeadless             = false;
+    private boolean      browserHeadless                = false;
     @Expose
-    private boolean      incognito                   = incognitoDefault;
+    private boolean      incognito                      = incognitoDefault;
     @Expose
-    private boolean      acceptInvalidCerts          = acceptInvalidCertsDefault;
+    private boolean      acceptInvalidCerts             = acceptInvalidCertsDefault;
     @Expose
-    private boolean      angular2App                 = angular2AppDefault;
+    private boolean      angular2App                    = angular2AppDefault;
     @Expose
-    private boolean      allowFindUrls               = allowFindUrlsDefault;
+    private boolean      allowFindUrls                  = allowFindUrlsDefault;
     @Expose
-    private boolean      allowScreenshots            = allowScreenshotsDefault;
+    private boolean      allowVerifyUrls                = allowVerifyUrlsDefault;
     @Expose
-    private Integer      browserWidth                = null;
+    private boolean      failTestOnFailVerifyUrls       = failTestOnFailVerifyUrlsDefault;
     @Expose
-    private Integer      browserHeight               = null;
+    private Set<String>  skipUrlTags                    = new HashSet<String>();
     @Expose
-    private boolean      browserMaximize             = browserMaximizeDefault;
+    private Set<String>  skipUrls                       = new HashSet<String>();
     @Expose
-    private Integer      verbosity                   = 0;
+    private boolean      allowScreenshots               = allowScreenshotsDefault;
+    @Expose
+    private boolean      allowScreenshotOnAssertFailure = allowScreenshotOnAssertFailureDefault;
+    @Expose
+    private Integer      browserWidth                   = null;
+    @Expose
+    private Integer      browserHeight                  = null;
+    @Expose
+    private boolean      browserMaximize                = browserMaximizeDefault;
+    @Expose
+    private Integer      verbosity                      = 0;
 
     protected Test deepCopy() {
         return new Test(this);
@@ -173,7 +189,10 @@ public class Test implements IntegratorData {
         this.oneWebDriverDefault = original.oneWebDriverDefault;
         this.angular2AppDefault = original.angular2AppDefault;
         this.allowFindUrlsDefault = original.allowFindUrlsDefault;
+        this.allowVerifyUrlsDefault = original.allowVerifyUrlsDefault;
+        this.failTestOnFailVerifyUrlsDefault = original.failTestOnFailVerifyUrlsDefault;
         this.allowScreenshotsDefault = original.allowScreenshotsDefault;
+        this.allowScreenshotOnAssertFailureDefault = original.allowScreenshotOnAssertFailureDefault;
         this.browserMaximizeDefault = original.browserMaximizeDefault;
         for (XmlSuite xml : original.xmlSuites) {
             this.xmlSuites.add((XmlSuite) xml.clone());
@@ -208,7 +227,12 @@ public class Test implements IntegratorData {
         this.acceptInvalidCerts = original.acceptInvalidCerts;
         this.angular2App = original.angular2App;
         this.allowFindUrls = original.allowFindUrls;
+        this.allowVerifyUrls = original.allowVerifyUrls;
+        this.failTestOnFailVerifyUrls = original.failTestOnFailVerifyUrls;
+        this.skipUrlTags = original.skipUrlTags;
+        this.skipUrls = original.skipUrls;
         this.allowScreenshots = original.allowScreenshots;
+        this.allowScreenshotOnAssertFailure = original.allowScreenshotOnAssertFailure;
         this.browserWidth = original.browserWidth;
         this.browserHeight = original.browserHeight;
         this.browserMaximize = original.browserMaximize;
@@ -655,9 +679,8 @@ public class Test implements IntegratorData {
      * @version.coseng
      */
     protected void setTestNgSuite(ISuite suite) {
-        if (suite != null) {
-            this.testNgSuite = suite;
-        }
+        /* allow set to null */
+        this.testNgSuite = suite;
     }
 
     /**
@@ -682,9 +705,8 @@ public class Test implements IntegratorData {
      * @version.coseng
      */
     protected void setTestNgTest(ITestContext test) {
-        if (test != null) {
-            this.testNgTest = test;
-        }
+        /* allow set to null */
+        this.testNgTest = test;
     }
 
     /**
@@ -709,9 +731,8 @@ public class Test implements IntegratorData {
      * @version.coseng
      */
     protected void setTestNgClass(ITestClass clazz) {
-        if (clazz != null) {
-            this.testNgClass = clazz;
-        }
+        /* allow set to null */
+        this.testNgClass = clazz;
     }
 
     /**
@@ -738,9 +759,8 @@ public class Test implements IntegratorData {
      * @version.coseng
      */
     protected void setTestNgMethod(IInvokedMethod method) {
-        if (method != null) {
-            this.testNgMethod = method;
-        }
+        /* allow set to null */
+        this.testNgMethod = method;
     }
 
     /**
@@ -761,8 +781,52 @@ public class Test implements IntegratorData {
      * @since 2.1
      * @version.coseng
      */
-    public boolean isAllowFindUrls() {
+    protected boolean isAllowFindUrls() {
         return allowFindUrls;
+    }
+
+    /**
+     * Checks if is allow verify urls.
+     *
+     * @return true, if is allow verify urls
+     * @since 3.0
+     * @version.coseng
+     */
+    protected boolean isAllowVerifyUrls() {
+        return allowVerifyUrls;
+    }
+
+    /**
+     * Checks if is fail test on fail verify urls.
+     *
+     * @return true, if is fail test on fail verify urls
+     * @since 3.0
+     * @version.coseng
+     */
+    protected boolean isFailTestOnFailVerifyUrls() {
+        return failTestOnFailVerifyUrls;
+    }
+
+    /**
+     * Gets the skip url tags.
+     *
+     * @return the skip url tags
+     * @since 3.0
+     * @version.coseng
+     */
+    protected Set<String> getSkipUrlTags() {
+        return skipUrlTags;
+    }
+
+    /**
+     * Gets the skip urls.
+     *
+     * @return the skip urls
+     * @since 3.0
+     * @version.coseng
+     */
+    protected Set<String> getSkipUrls() {
+        return skipUrls;
     }
 
     /**
@@ -774,6 +838,17 @@ public class Test implements IntegratorData {
      */
     public boolean isAllowScreenshots() {
         return allowScreenshots;
+    }
+
+    /**
+     * Checks if is allow screenshot on assert failure.
+     *
+     * @return true, if is allow screenshot on assert failure
+     * @since 3.0
+     * @version.coseng
+     */
+    protected boolean isAllowScreenshotOnAssertFailure() {
+        return allowScreenshotOnAssertFailure;
     }
 
     /**
@@ -862,12 +937,15 @@ public class Test implements IntegratorData {
                 + ", browser [" + browser + "], browserRequestVersion [" + browserRequestVersion
                 + "], browserHeadless [" + browserHeadless + "], incognito [" + incognito
                 + "], acceptInvalidCerts [" + acceptInvalidCerts + "], angular2App [" + angular2App
-                + "], allowFindUrls [" + allowFindUrls + "], allowScreenshots [" + allowScreenshots
-                + "], browserWidth [" + browserWidth + "], browserHeight [" + browserHeight
-                + "], browserMaximize [" + browserMaximize + "], oneWebDriver [" + oneWebDriver
-                + "], verbosity [" + verbosity + "], webDriverTimeoutSeconds ["
-                + webDriverTimeoutSeconds + "], webDriverWaitTimeoutSeconds ["
-                + webDriverWaitTimeoutSeconds + "], reportDirectory [" + reportDirectory + "]";
+                + "], allowFindUrls [" + allowFindUrls + "], allowVerifyUrls [" + allowVerifyUrls
+                + "], failTestOnfFailVerifyUrls [" + failTestOnFailVerifyUrls
+                + "], allowScreenshots [" + allowScreenshots + "], allowScreenshotOnAssertFailure ["
+                + allowScreenshotOnAssertFailure + "], browserWidth [" + browserWidth
+                + "], browserHeight [" + browserHeight + "], browserMaximize [" + browserMaximize
+                + "], oneWebDriver [" + oneWebDriver + "], verbosity [" + verbosity
+                + "], webDriverTimeoutSeconds [" + webDriverTimeoutSeconds
+                + "], webDriverWaitTimeoutSeconds [" + webDriverWaitTimeoutSeconds
+                + "], reportDirectory [" + reportDirectory + "]";
     }
 
     /*

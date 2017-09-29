@@ -16,6 +16,7 @@
  */
 package com.sios.stc.coseng.run;
 
+import java.io.File;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -35,6 +36,7 @@ import org.testng.ITestResult;
 import org.testng.xml.XmlSuite;
 import org.testng.xml.XmlSuite.ParallelMode;
 
+import com.sios.stc.coseng.integration.IIntegrator;
 import com.sios.stc.coseng.integration.Integrator;
 import com.sios.stc.coseng.integration.Integrator.TriggerOn;
 
@@ -95,8 +97,9 @@ import com.sios.stc.coseng.integration.Integrator.TriggerOn;
  * @since 2.0
  * @version.coseng
  */
-public class CosengListener extends WebDriverLifecycle implements IExecutionListener,
-        ISuiteListener, ITestListener, IClassListener, IInvokedMethodListener2, IReporter {
+public class CosengListener extends WebDriverLifecycle
+        implements IExecutionListener, ISuiteListener, ITestListener, IClassListener,
+        IInvokedMethodListener2, IReporter, IIntegrator {
 
     /**
      * The Enum WebDriverAction.
@@ -237,6 +240,7 @@ public class CosengListener extends WebDriverLifecycle implements IExecutionList
         try {
             setCosengContext();
             notifyIntegrators(TriggerOn.SUITEFINISH);
+            test.setTestNgSuite(null);
         } catch (CosengException e) {
             throw new RuntimeException(e);
         }
@@ -307,6 +311,7 @@ public class CosengListener extends WebDriverLifecycle implements IExecutionList
         try {
             setCosengContext();
             notifyIntegrators(TriggerOn.TESTFINISH);
+            test.setTestNgTest(null);
         } catch (CosengException e) {
             throw new RuntimeException(e);
         }
@@ -421,6 +426,7 @@ public class CosengListener extends WebDriverLifecycle implements IExecutionList
         try {
             setCosengContext();
             notifyIntegrators(TriggerOn.CLASSFINISH);
+            test.setTestNgClass(null);
         } catch (CosengException e) {
             throw new RuntimeException(e);
         }
@@ -504,6 +510,7 @@ public class CosengListener extends WebDriverLifecycle implements IExecutionList
         try {
             setCosengContext();
             notifyIntegrators(TriggerOn.METHODFINISH);
+            test.setTestNgMethod(null);
         } catch (CosengException e) {
             throw new RuntimeException(e);
         }
@@ -589,18 +596,16 @@ public class CosengListener extends WebDriverLifecycle implements IExecutionList
         }
     }
 
-    /**
-     * Notify integrators
-     *
-     * @param trigger
-     *            the trigger
-     * @throws CosengException
-     *             the coseng exception
-     * @since 3.0
-     * @version.coseng
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.sios.stc.coseng.integration.IIntegrator#notifyIntegrators(com.sios.
+     * stc.coseng.integration.Integrator.TriggerOn)
      */
-    private synchronized void notifyIntegrators(TriggerOn trigger) throws CosengException {
-        for (Integrator i : GetIntegrators.wired()) {
+    @Override
+    public synchronized void notifyIntegrators(TriggerOn trigger) throws CosengException {
+        for (Integrator i : Integrators.getWired()) {
             switch (trigger) {
                 case EXECUTIONSTART:
                     i.onExecutionStart(test);
@@ -646,6 +651,22 @@ public class CosengListener extends WebDriverLifecycle implements IExecutionList
                     // do nothing
             }
         }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.sios.stc.coseng.integration.IIntegrator#notifyIntegrators(com.sios.
+     * stc.coseng.run.Test, java.io.File, java.io.File)
+     */
+    @Override
+    public void notifyIntegrators(Test test, File reportDirectory, File resourceDirectory)
+            throws CosengException {
+        /*
+         * do nothing; this is used in Concurrent after all tests have been
+         * completed.
+         */
     }
 
     /*

@@ -62,9 +62,6 @@ public class Google extends CosengRunner {
         /* Find and save URLs on this route */
         logMessage("finding URLs");
         findUrls();
-        logMessage("saving URLs");
-        saveUrls();
-        // urlsAccessible();
     }
 
     @Test(description = "Verify connect to Google About and Carrers link")
@@ -95,9 +92,6 @@ public class Google extends CosengRunner {
         /* Find and save URLs on this route */
         logMessage("finding URLs");
         findUrls();
-        logMessage("saving URLs");
-        saveUrls();
-        // urlsAccessible();
     }
 
 }

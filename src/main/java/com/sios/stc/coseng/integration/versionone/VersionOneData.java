@@ -19,6 +19,8 @@ package com.sios.stc.coseng.integration.versionone;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.sios.stc.coseng.Common;
 import com.sios.stc.coseng.integration.Data;
 import com.sios.stc.coseng.integration.Integrator.TriggerOn;
@@ -205,8 +207,8 @@ public class VersionOneData extends Data {
      */
     protected void setBacklogTimebox(String sprintOid) {
         if (sprintOid != null) {
-            backlogTimebox = new Field(ATTR_TIMEBOX, Common.STRING_EMPTY, sprintOid,
-                    TriggerOn.EXECUTIONSTART);
+            backlogTimebox =
+                    new Field(ATTR_TIMEBOX, StringUtils.EMPTY, sprintOid, TriggerOn.EXECUTIONSTART);
         }
     }
 
@@ -544,13 +546,13 @@ public class VersionOneData extends Data {
         if (fields != null && value != null && !value.isEmpty() && attribute != null
                 && !attribute.isEmpty() && trigger != null) {
             if (fields.isEmpty()) {
-                fields.add(new Field(attribute, Common.STRING_EMPTY, value, trigger));
+                fields.add(new Field(attribute, StringUtils.EMPTY, value, trigger));
             } else if (isSet) {
                 Field field = getField(fields, trigger);
                 if (field != null) {
                     field.setValue(value);
                 } else {
-                    fields.add(new Field(attribute, Common.STRING_EMPTY, value, trigger));
+                    fields.add(new Field(attribute, StringUtils.EMPTY, value, trigger));
                 }
             } else {
                 for (Field field : fields) {
@@ -598,7 +600,7 @@ public class VersionOneData extends Data {
      * @version.coseng
      */
     private synchronized String getValue(List<Field> fields, TriggerOn trigger) {
-        String value = Common.STRING_EMPTY;
+        String value = StringUtils.EMPTY;
         Field field = getField(fields, trigger);
         if (field != null) {
             value = field.getValue();

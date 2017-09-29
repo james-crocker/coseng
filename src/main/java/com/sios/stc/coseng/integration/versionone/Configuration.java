@@ -16,8 +16,9 @@
  */
 package com.sios.stc.coseng.integration.versionone;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.gson.annotations.Expose;
-import com.sios.stc.coseng.Common;
 
 /**
  * The Class Configuration.
@@ -55,7 +56,7 @@ public class Configuration {
         if (version != null) {
             return version;
         }
-        return Common.STRING_EMPTY;
+        return StringUtils.EMPTY;
     }
 
     /**
@@ -69,7 +70,7 @@ public class Configuration {
         if (instanceUrl != null) {
             return instanceUrl;
         }
-        return Common.STRING_EMPTY;
+        return StringUtils.EMPTY;
     }
 
     /**
@@ -83,7 +84,7 @@ public class Configuration {
         if (accessToken != null) {
             return accessToken;
         }
-        return Common.STRING_EMPTY;
+        return StringUtils.EMPTY;
     }
 
     /**
@@ -97,7 +98,7 @@ public class Configuration {
         if (applicationName != null) {
             return applicationName;
         }
-        return Common.STRING_EMPTY;
+        return StringUtils.EMPTY;
     }
 
     /**
@@ -111,7 +112,7 @@ public class Configuration {
         if (projectName != null) {
             return projectName;
         }
-        return Common.STRING_EMPTY;
+        return StringUtils.EMPTY;
     }
 
     /**
@@ -125,7 +126,7 @@ public class Configuration {
         if (sprintName != null) {
             return sprintName;
         }
-        return Common.STRING_EMPTY;
+        return StringUtils.EMPTY;
     }
 
     /**

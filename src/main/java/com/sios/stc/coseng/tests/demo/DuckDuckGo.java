@@ -72,9 +72,6 @@ public class DuckDuckGo extends CosengRunner {
         /* Find and save URLs on this route */
         logMessage("finding URLs");
         findUrls();
-        logMessage("saving URLs");
-        saveUrls();
-        // urlsAccessible();
     }
 
 }

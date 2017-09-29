@@ -36,8 +36,9 @@ package com.sios.stc.coseng.integration.versionone;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.gson.annotations.Expose;
-import com.sios.stc.coseng.Common;
 import com.sios.stc.coseng.integration.Integrator.TriggerOn;
 
 /**
@@ -64,7 +65,7 @@ public class Backlog {
         if (titlePrefix != null) {
             return titlePrefix;
         }
-        return Common.STRING_EMPTY;
+        return StringUtils.EMPTY;
     }
 
     /**

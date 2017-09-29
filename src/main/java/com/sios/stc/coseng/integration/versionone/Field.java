@@ -16,8 +16,9 @@
  */
 package com.sios.stc.coseng.integration.versionone;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.gson.annotations.Expose;
-import com.sios.stc.coseng.Common;
 import com.sios.stc.coseng.integration.Integrator;
 
 /**
@@ -94,7 +95,7 @@ public class Field {
         if (attribute != null) {
             return attribute;
         }
-        return Common.STRING_EMPTY;
+        return StringUtils.EMPTY;
     }
 
     /**
@@ -108,7 +109,7 @@ public class Field {
         if (name != null) {
             return name;
         }
-        return Common.STRING_EMPTY;
+        return StringUtils.EMPTY;
     }
 
     /**
@@ -122,7 +123,7 @@ public class Field {
         if (value != null) {
             return value;
         }
-        return Common.STRING_EMPTY;
+        return StringUtils.EMPTY;
     }
 
     /**
