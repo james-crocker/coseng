@@ -16,43 +16,28 @@
  */
 package com.sios.stc.coseng.integration;
 
-import java.io.File;
+import java.net.URI;
 
-import com.sios.stc.coseng.integration.Integrator.TriggerOn;
-import com.sios.stc.coseng.run.CosengException;
+import com.sios.stc.coseng.Triggers.Phase;
+import com.sios.stc.coseng.Triggers.TriggerOn;
 import com.sios.stc.coseng.run.Test;
 
+/**
+ * The Class Integrator.
+ *
+ * @since 3.0
+ * @version.coseng
+ */
 public interface IIntegrator {
 
-    /**
-     * Notify integrators when the TestNG test states changes.
-     *
-     * @param trigger
-     *            the trigger
-     * @throws CosengException
-     *             the coseng exception
-     * @since 3.0
-     * @version.coseng
-     */
-    public void notifyIntegrators(TriggerOn trigger) throws CosengException;
+    abstract public void validateAndPrepare(Test test, URI configResource);
 
-    /**
-     * Notify integrators of the report and resource directories. Used primarily
-     * to attach the reports and resources used for the tests at the conclusion
-     * of the test execution.
-     *
-     * @param test
-     *            the test
-     * @param reportDirectory
-     *            the report directory
-     * @param resourceDirectory
-     *            the resource directory
-     * @throws CosengException
-     *             the coseng exception
-     * @since 3.0
-     * @version.coseng
-     */
-    public void notifyIntegrators(Test test, File reportDirectory, File resourceDirectory)
-            throws CosengException;
+    abstract public void actOn(TriggerOn trigger, Phase phase);
+
+    abstract public void addTestStep(String stepMessage);
+
+    abstract public void addTestStepExpectedResult(String stepMessage, String expetedResult);
+
+    abstract public void addTestStepActualResult(String stepMessage, String actualResult);
 
 }

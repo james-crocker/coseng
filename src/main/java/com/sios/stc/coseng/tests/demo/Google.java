@@ -16,82 +16,88 @@
  */
 package com.sios.stc.coseng.tests.demo;
 
+import java.net.MalformedURLException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.testng.Assert;
+import org.openqa.selenium.WebElement;
+import org.testng.annotations.Optional;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
-import com.sios.stc.coseng.RunTests;
-import com.sios.stc.coseng.run.CosengException;
-import com.sios.stc.coseng.run.CosengRunner;
-import com.sios.stc.coseng.run.WebElement;
+import com.sios.stc.coseng.runnner.Coseng;
+import com.sios.stc.coseng.runnner.Log;
+import com.sios.stc.coseng.util.Stringer;
 
-public class Google extends CosengRunner {
+@Test(groups = { "any" })
+public class Google extends Coseng {
 
-    private static final Logger log = LogManager.getLogger(RunTests.class.getName());
+    private static final Logger log4j = LogManager.getLogger(Google.class);
 
-    @Test(description = "Verify connect to Google and search")
-    public void connect1() throws CosengException {
+    @Test(description = "Verify connect to Google and search", groups = { "g1" })
+    @Parameters({ "testCharge" })
+    public void connect1(@Optional("negative") String testCharge) throws MalformedURLException {
         String searchForm = "searchform";
         String url = "http://www.google.com";
         String redirectedUrl = "https://www.google.com";
 
         /* Make sure a web driver for this thread */
-        Assert.assertTrue(hasWebDriver(), "there should be a web driver");
-        WebDriver webDriver = getWebDriver();
-        log.debug("Test [{}], web driver [{}], thread [{}]", getTest().getName(),
-                webDriver.hashCode(), Thread.currentThread().getId());
+        WebDriver webDriver = getWrappedDriver();
+        log4j.debug("Test [{}], web driver [{}], thread [{}]", cosengTest.getId(), webDriver.hashCode(),
+                Thread.currentThread().getId());
+        Log log = cosengLog;
 
         /* Get the url and assure on correct route. */
-        logTestStep("navigating to url [" + url + "] and assuring search form available");
-        webDriver.get(url);
-        logAssert.assertTrue(currentUrlContains(redirectedUrl),
-                "Current URL should contain [" + redirectedUrl + "]");
+        log.testStep("Navigating to url " + Stringer.wrapBracket(url) + " and assuring search form available");
+        webDriver.navigate().to(url);
+
+        log.hardAssert.assertTrue(webDriver.getCurrentUrl().startsWith(redirectedUrl),
+                "Current URL should contain " + Stringer.wrapBracket(redirectedUrl));
 
         /* Get a COSENG WebElement object, find it and assure displayed */
-        WebElement weSearchForm = newWebElement(By.id(searchForm));
-        weSearchForm.find();
-        logAssert.assertTrue(weSearchForm.isDisplayed(), "search form element should be displayed");
+        WebElement weSearchForm = webDriver.findElement(By.id(searchForm));
+        log.hardAssert.assertTrue(weSearchForm.isDisplayed(), "Search form element should be displayed");
 
         /* Take a screenshot while were here */
-        logMessage("saving screenshot [google-connect1]");
-        saveScreenshot("google-connect1");
+        log.message("Saving screenshot [google-connect1]");
+        cosengWindow.saveScreenshot("google-connect1");
 
         /* Find and save URLs on this route */
-        logMessage("finding URLs");
-        findUrls();
+        log.message("Finding URLs");
+        cosengUri.findOnRoute();
     }
 
     @Test(description = "Verify connect to Google About and Carrers link")
-    public void connect2() throws CosengException {
+    public void connect2() {
         String carrers = "//*[@id=\"footer-sitemap-about-content\"]/div/ul/li[3]/a";
         String url = "https://www.google.com/intl/en/about/";
 
         /* Make sure a web driver for this thread */
-        Assert.assertTrue(hasWebDriver(), "there should be an available webdriver");
-        WebDriver webDriver = getWebDriver();
-        log.debug("Test [{}], web driver [{}], thread [{}]", getTest().getName(),
-                webDriver.hashCode(), Thread.currentThread().getId());
+        WebDriver webDriver = getWrappedDriver();
+        log4j.debug("Test [{}], web driver [{}], thread [{}]", cosengTest.getId(), webDriver.hashCode(),
+                Thread.currentThread().getId());
+        Log log = cosengLog;
 
         /* Get the url and assure on correct route. */
-        logTestStep("navigating to url [" + url + "] and assuring Carrers links available");
-        webDriver.get(url);
-        logAssert.assertTrue(currentUrlContains(url), "current URL should contain [" + url + "]");
+        log.testStep("Navigating to url " + Stringer.wrapBracket(url) + " and assuring Carrers links available");
+        webDriver.navigate().to(url);
+
+        log.hardAssert.assertTrue(webDriver.getCurrentUrl().contains(url),
+                "Current URL should contain " + Stringer.wrapBracket(url));
 
         /* Get a COSENG WebElement object, find it and assure displayed */
-        WebElement weCarrers = newWebElement(By.xpath(carrers));
-        weCarrers.find();
-        logAssert.assertTrue(weCarrers.isDisplayed(), "carrers web element should be displayed");
+        WebElement weCarrers = webDriver.findElement(By.xpath(carrers));
+        log.hardAssert.assertTrue(weCarrers.isDisplayed(), "Carrers web element should be displayed");
 
         /* Take a screenshot while were here */
-        logMessage("saving screenshot [google-connect2]");
-        saveScreenshot("google-connect2");
+        log.message("Saving screenshot " + Stringer.wrapBracket("google-connect2"));
+        cosengWindow.saveScreenshot("google-connect2");
 
         /* Find and save URLs on this route */
-        logMessage("finding URLs");
-        findUrls();
+        log.message("Finding URIs");
+        cosengUri.findOnRoute();
     }
 
 }

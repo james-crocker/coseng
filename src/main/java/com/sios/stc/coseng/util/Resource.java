@@ -18,33 +18,29 @@ package com.sios.stc.coseng.util;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
+import java.net.URI;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.FileAppender;
-import org.apache.logging.log4j.core.config.Configuration;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
-import com.sios.stc.coseng.run.CosengException;
+import com.google.gson.JsonSerializer;
 
 import wiremock.com.google.common.io.CharStreams;
 
@@ -55,248 +51,166 @@ import wiremock.com.google.common.io.CharStreams;
  * @since 2.0
  * @version.coseng
  */
-public class Resource {
+public final class Resource {
 
-    /**
-     * Gets the name of the resource.
-     *
-     * @param resource
-     *            the resource
-     * @return the name
-     * @throws CosengException
-     *             the coseng exception
-     * @since 2.0
-     * @version.coseng
-     */
-    public static String getName(String resource) throws CosengException {
-        if (resource != null && !resource.isEmpty()) {
-            String name = FilenameUtils.getName(resource);
-            if (name != null && !name.isEmpty()) {
-                return name;
-            }
-            throw new CosengException("Can't get name for the resource [" + resource + "]");
-        }
-        throw new CosengException("Can't get name for null or empty resource");
+    public static File getFile(URI resource) {
+        return new File(resource);
     }
 
-    /**
-     * Gets the relative path.
-     *
-     * @param resource
-     *            the resource
-     * @return the relative path
-     * @throws CosengException
-     *             the coseng exception
-     * @since 2.1
-     * @version.coseng
-     */
-    public static String getRelativePath(String resource) throws CosengException {
-        if (resource != null && !resource.isEmpty()) {
-            /* Removes leading file separator */
-            String path = FilenameUtils.getPath(resource);
-            if (path != null && !path.isEmpty()) {
-                return path;
-            }
-            throw new CosengException(
-                    "Can't get relative path for the resource [" + resource + "]");
+    public static String getString(URI resource) {
+        try {
+            return getString(getInputStream(resource));
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to get resource " + Stringer.wrapBracket(resource), e);
         }
-        throw new CosengException("Can't get relative path for null or empty resource");
     }
 
-    /**
-     * Creates the resource.
-     *
-     * @param input
-     *            the input
-     * @param resource
-     *            the resource
-     * @throws CosengException
-     *             the coseng exception
-     * @since 2.0
-     * @version.coseng
-     */
-    public static void create(InputStream input, File resource) throws CosengException {
-        String message = "Unable to create resource ["
-                + (resource == null ? null : resource.getPath()) + "]";
-        if (resource != null && !resource.isDirectory() && input != null) {
-            try {
-                FileUtils.copyInputStreamToFile(input, resource);
-                return;
-            } catch (IOException e) {
-                throw new CosengException(message, e);
-            }
+    private static String getString(InputStream inputStream) {
+        try {
+            return CharStreams.toString(new InputStreamReader(inputStream));
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to read input stream", e);
         }
-        throw new CosengException(message);
     }
 
-    /**
-     * Gets the resource from filesystem or the class loader.
-     *
-     * @param resource
-     *            the resource
-     * @return the input stream
-     * @throws CosengException
-     *             the coseng exception
-     * @see com.sios.stc.coseng.util.Resource#getResource(String)
-     * @since 2.0
-     * @version.coseng
-     */
-    public static InputStream getStream(String resource) throws CosengException {
-        if (resource != null && !resource.isEmpty()) {
-            // check if URL
-            try {
-                URL url = new URL(resource);
-                return url.openStream();
-            } catch (IOException e) {
-                // wasn't a url; keep processing
-            }
-            InputStream input = null;
-            // check filesystem
-            File file = new File(resource);
-            if (file != null && file.exists() && file.canRead()) {
-                try {
-                    input = new FileInputStream(file);
-                } catch (FileNotFoundException e) {
-                    // OK; skip if not found and try class
+    public static InputStream getInputStream(final URI uri) {
+        String msg = "Resource " + Stringer.wrapBracket(uri) + " is not available";
+        InputStream inputStream = null;
+        try {
+            URI canonicalUri = UriUtil.getCanonical(uri);
+            if (UriUtil.isFileScheme(canonicalUri)) {
+                File file = new File(canonicalUri);
+                if (file.exists() && file.canRead()) {
+                    inputStream = new FileInputStream(file);
+                }
+            } else if (UriUtil.isResourceScheme(canonicalUri)) {
+                if (canonicalUri.isOpaque()) {
+                    Class<?> callerClass = getCallerClass();
+                    msg += " relative to calling class " + Stringer.wrapBracket(callerClass.getName());
+                    inputStream = callerClass.getResourceAsStream(canonicalUri.getPath());
+                } else {
+                    inputStream = Resource.class.getResourceAsStream(canonicalUri.getPath());
                 }
             } else {
-                input = getResource(resource);
+                inputStream = canonicalUri.toURL().openStream();
             }
-            if (input != null) {
-                return input;
-            }
-        }
-        throw new CosengException(
-                "Resource [" + (resource == null ? null : resource) + "] absent or unreadable");
-    }
-
-    /**
-     * Gets the string.
-     *
-     * @param inputStream
-     *            the input stream
-     * @return the string
-     * @throws CosengException
-     *             the coseng exception
-     * @since 3.0
-     * @version.coseng
-     */
-    public static String getString(InputStream inputStream) throws CosengException {
-        try {
-            Reader reader = new InputStreamReader(inputStream);
-            return CharStreams.toString(reader);
+            if (inputStream == null)
+                throw new RuntimeException();
         } catch (Exception e) {
-            throw new CosengException("Unable to read input stream", e);
+            throw new RuntimeException(msg, e);
         }
+        return inputStream;
     }
 
-    /**
-     * Gets the string.
-     *
-     * @param resource
-     *            the resource
-     * @return the string
-     * @throws CosengException
-     *             the coseng exception
-     * @since 3.0
-     * @version.coseng
-     */
-    public static String getString(String resource) throws CosengException {
+    private static Class<?> getCallerClass() {
+        String className = Thread.currentThread().getStackTrace()[4].getClassName();
         try {
-            InputStream inputStream = getStream(resource);
-            return getString(inputStream);
+            return Class.forName(className);
         } catch (Exception e) {
-            throw new CosengException("Unable to read resource", e);
+            throw new RuntimeException("Calling class name " + Stringer.wrapBracket(className) + " not found", e);
         }
     }
 
-    /**
-     * Gets the object from json.
-     *
-     * @param jsonFile
-     *            the json file
-     * @param desiredClass
-     *            the desired class
-     * @return the object from json
-     * @throws CosengException
-     *             the coseng exception
-     * @since 3.0
-     * @version.coseng
-     */
-    public static Object getObjectFromJson(String jsonFile, Class<?> desiredClass)
-            throws CosengException {
-        return getObjectFromJson(jsonFile, null, desiredClass);
+    public static void saveInputStream(InputStream input, URI uri) {
+        String message = "Unable to save to resource " + Stringer.wrapBracket(uri.getPath());
+        try {
+            URI canonicalUri = UriUtil.getCanonical(uri);
+            if (input == null || !UriUtil.isFileScheme(canonicalUri))
+                throw new IllegalArgumentException();
+            File resourceFile = getFile(canonicalUri);
+            FileUtils.copyInputStreamToFile(input, resourceFile);
+        } catch (Exception e) {
+            throw new RuntimeException(message, e);
+        }
     }
 
-    /**
-     * Gets the object from json.
-     *
-     * @param jsonFile
-     *            the json file
-     * @param typeAdapters
-     *            the type adapters
-     * @param desiredClass
-     *            the desired class
-     * @return the object from json
-     * @throws CosengException
-     *             the coseng exception
-     * @since 3.0
-     * @version.coseng
-     */
-    public static Object getObjectFromJson(String jsonFile,
-            Map<Class<?>, JsonDeserializer<?>> typeAdapters, Class<?> desiredClass)
-            throws CosengException {
+    public static Object getObjectFromJson(URI jsonResource, Class<?> desiredClass) {
+        return getObjectFromJson(jsonResource, null, desiredClass, true);
+    }
+
+    public static Object getObjectFromJson(URI jsonResource, Class<?> desiredClass,
+            boolean excludeFieldsWithoutExposeAnnotation) {
+        return getObjectFromJson(jsonResource, null, desiredClass, excludeFieldsWithoutExposeAnnotation);
+    }
+
+    public static Object getObjectFromJson(URI jsonResource, Map<Class<?>, JsonDeserializer<?>> typeDeserializers,
+            Class<?> desiredClass) {
+        return getObjectFromJson(jsonResource, typeDeserializers, desiredClass, true);
+    }
+
+    public static Object getObjectFromJson(URI jsonResource, Map<Class<?>, JsonDeserializer<?>> typeDeserializers,
+            Class<?> desiredClass, boolean excludeFieldsWithoutExposeAnnotation) {
         try {
-            InputStream jsonInputStream = getStream(jsonFile);
             GsonBuilder gsonBuilder = new GsonBuilder();
-            if (typeAdapters != null) {
-                for (Class<?> typeClass : typeAdapters.keySet()) {
-                    gsonBuilder.registerTypeAdapter(typeClass, typeAdapters.get(typeClass));
+            if (typeDeserializers != null)
+                for (Class<?> typeClass : typeDeserializers.keySet()) {
+                    gsonBuilder.registerTypeAdapter(typeClass, typeDeserializers.get(typeClass));
                 }
-            }
-            Gson gson = gsonBuilder.excludeFieldsWithoutExposeAnnotation().create();
-            Reader jsonReader = new InputStreamReader(jsonInputStream);
-            return (Object) gson.fromJson(jsonReader, desiredClass);
+            Gson gson = null;
+            if (excludeFieldsWithoutExposeAnnotation)
+                gson = gsonBuilder.excludeFieldsWithoutExposeAnnotation().create();
+            else
+                gson = gsonBuilder.create();
+            InputStream inputStream = getInputStream(jsonResource);
+            inputStream.available();
+            Object object = (Object) gson.fromJson(new InputStreamReader(inputStream), desiredClass);
+            if (object == null)
+                throw new NullPointerException();
+            return object;
         } catch (Exception e) {
-            throw new CosengException("Exception reading JSON file [" + jsonFile + "]", e);
+            throw new RuntimeException("Exception reading JSON file " + Stringer.wrapBracket(jsonResource), e);
         }
     }
 
-    /**
-     * Gets the json from object.
-     *
-     * @param object
-     *            the object
-     * @return the json from object
-     * @since 3.0
-     * @version.coseng
-     */
-    public static String getJsonFromObject(Object object) {
-        Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting()
-                .create();
+    public static String getJsonFromObject(Object object, Map<Class<?>, JsonSerializer<?>> typeSerializers,
+            boolean serializeNull) {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.excludeFieldsWithoutExposeAnnotation().setPrettyPrinting();
+        if (serializeNull)
+            gsonBuilder.serializeNulls();
+        if (typeSerializers != null && !typeSerializers.isEmpty())
+            for (Class<?> clazz : typeSerializers.keySet()) {
+                gsonBuilder.registerTypeAdapter(clazz, typeSerializers.get(clazz));
+            }
+        Gson gson = gsonBuilder.create();
         return gson.toJson(object);
     }
 
-    /**
-     * Zip folder.
-     *
-     * @param sourcePath
-     *            the source path
-     * @param zipPath
-     *            the zip path
-     * @throws CosengException
-     *             the coseng exception
-     * @since 3.0
-     * @version.coseng
-     */
-    public static void zipFolder(Path sourcePath, Path zipPath) throws CosengException {
+    public static void makeDirectory(URI uri) {
+        makeDirectory(uri, false);
+    }
+
+    public static void makeDirectoryClean(URI uri) {
+        makeDirectory(uri, true);
+    }
+
+    private static void makeDirectory(URI uri, boolean clean) {
+        try {
+            File directoryFile = new File(uri);
+            FileUtils.forceMkdir(directoryFile);
+            if (clean)
+                FileUtils.cleanDirectory(directoryFile);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not make directory " + Stringer.wrapBracket(uri) + " with clean "
+                    + Stringer.wrapBracket(clean), e);
+        }
+    }
+
+    public static void touchFile(File file) {
+        try {
+            FileUtils.touch(file);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not touch file " + Stringer.wrapBracket(file), e);
+        }
+    }
+
+    public static void zipFolder(Path sourcePath, Path zipPath) {
         if (sourcePath != null && zipPath != null) {
             try {
                 FileOutputStream zipFile = new FileOutputStream(zipPath.toFile());
                 ZipOutputStream zipOutput = new ZipOutputStream(zipFile);
                 Files.walkFileTree(sourcePath, new SimpleFileVisitor<Path>() {
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                            throws IOException {
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                         String relativeFile = sourcePath.relativize(file).toString();
                         zipOutput.putNextEntry(new ZipEntry(relativeFile));
                         Files.copy(file, zipOutput);
@@ -306,50 +220,35 @@ public class Resource {
                 });
                 zipOutput.close();
                 zipFile.close();
-            } catch (IOException e) {
-                throw new CosengException("Unable to create zip file [" + zipPath.toString()
-                        + "] with [" + sourcePath.toString() + "] content", e);
+            } catch (Exception e) {
+                throw new RuntimeException("Unable to create zip file " + Stringer.wrapBracket(zipPath) + " with "
+                        + Stringer.wrapBracket(sourcePath) + " content", e);
             }
         }
     }
 
-    /**
-     * Gets the Log4J file.
-     *
-     * @return the log4j file
-     * @throws CosengException
-     *             the coseng exception
-     * @since 3.0
-     * @version.coseng
-     */
-    public static File getLog4jFile() throws CosengException {
-        try {
-            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-            Configuration config = ctx.getConfiguration();
-            FileAppender logFile = (FileAppender) config.getAppender("File");
-            return new File(logFile.getFileName());
-        } catch (Exception e) {
-            throw new CosengException(
-                    "Unable to reference Log4J log file from log manager configuration", e);
+    public static void addClassPathsToThread(Set<URI> classPaths) {
+        /*
+         * http://www.invertedsoftware.com/tutorials/Load-your-CLASSPATH-at-runtime.html
+         * https://stackoverflow.com/questions/1010919/adding-files-to-java-classpath-at
+         * -runtime
+         */
+        if (classPaths != null) {
+            try {
+                URL[] urls = new URL[classPaths.size()];
+                int i = 0;
+                for (URI classPath : classPaths) {
+                    classPath = UriUtil.getCanonical(classPath);
+                    urls[i] = classPath.toURL();
+                    i++;
+                }
+                URLClassLoader urlClassLoader = new URLClassLoader(urls,
+                        Thread.currentThread().getContextClassLoader());
+                Thread.currentThread().setContextClassLoader(urlClassLoader);
+            } catch (Exception e) {
+                throw new RuntimeException("Unable to load class path URIs", e);
+            }
         }
-    }
-
-    /**
-     * Gets the resource from the class loader.
-     *
-     * @param resource
-     *            the resource
-     * @return the resource
-     * @see com.sios.stc.coseng.util.Resource#get(String)
-     * @since 2.0
-     * @version.coseng
-     */
-    private static InputStream getResource(String resource) {
-        InputStream input = Resource.class.getClassLoader().getResourceAsStream(resource);
-        if (input != null) {
-            return input;
-        }
-        return null;
     }
 
 }

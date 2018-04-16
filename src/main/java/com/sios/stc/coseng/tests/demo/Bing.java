@@ -20,76 +20,77 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.testng.Assert;
+import org.openqa.selenium.WebElement;
 import org.testng.annotations.Test;
 
-import com.sios.stc.coseng.RunTests;
-import com.sios.stc.coseng.run.CosengException;
-import com.sios.stc.coseng.run.CosengRunner;
-import com.sios.stc.coseng.run.WebElement;
+import com.sios.stc.coseng.runnner.Coseng;
+import com.sios.stc.coseng.runnner.Log;
+import com.sios.stc.coseng.util.Stringer;
 
-public class Bing extends CosengRunner {
+public class Bing extends Coseng {
 
-    private static final Logger log = LogManager.getLogger(RunTests.class.getName());
+    private static final Logger log4j = LogManager.getLogger(Bing.class);
 
-    @Test(description = "Verify connect to Bing and search")
-    public void connect1() throws CosengException {
+    @Test(description = "Verify connect to Bing and search", groups = { "bing1", "all" })
+    public void connect1() {
         String searchform = "sb_form_q";
-        String url = "http://www.bing.com";
+        String url = "https://www.bing.com";
 
         /* Make sure a web driver for this thread */
-        Assert.assertTrue(hasWebDriver(), "there should be a web driver");
-        WebDriver webDriver = getWebDriver();
-        log.debug("Test [{}], web driver [{}], thread [{}]", getTest().getName(),
-                webDriver.hashCode(), Thread.currentThread().getId());
+        WebDriver webDriver = getWrappedDriver();
+        log4j.debug("Test [{}], web driver [{}], thread [{}]", cosengTest.getId(), webDriver.hashCode(),
+                Thread.currentThread().getId());
+        Log log = cosengLog;
 
         /* Get the url and assure on correct route. */
-        logTestStep("navigating to url [" + url + "] and assuring search form available]");
+        log.testStep("Navigating to url " + Stringer.wrapBracket(url) + " and assuring search form available]");
         webDriver.get(url);
-        logAssert.assertTrue(currentUrlContains(url), "current URL should contain [" + url + "]");
+
+        log.hardAssert.assertTrue(webDriver.getCurrentUrl().contains(url),
+                "Current URL should contain " + Stringer.wrapBracket(url));
 
         /* Get a COSENG WebElement object, find it and assure displayed */
-        WebElement weSearchForm = newWebElement(By.id(searchform));
-        weSearchForm.find();
-        logAssert.assertTrue(weSearchForm.isDisplayed(), "search form element should be displayed");
+        WebElement weSearchForm = webDriver.findElement(By.id(searchform));
+        log.hardAssert.assertTrue(weSearchForm.isDisplayed(), "Search form element should be displayed");
 
         /* Take a screenshot while were here */
-        logMessage("saving screenshot [bing-connect1]");
-        saveScreenshot("bing-connect1");
+        log.message("Saving screenshot " + Stringer.wrapBracket("bing-connect1"));
+        cosengWindow.saveScreenshot("bing-connect1");
 
         /* Find and save URLs on this route */
-        logMessage("finding URLs");
-        findUrls();
+        log.message("Finding URIs");
+        cosengUri.findOnRoute();
     }
 
-    @Test(description = "Verify connect to Bing Help and search")
-    public void connect2() throws CosengException {
+    @Test(description = "Verify connect to Bing Help and search", groups = { "bing2", "all" })
+    public void connect2() {
         String searchForm = "//*[@id=\"searchquery\"]";
         String url = "http://help.bing.microsoft.com/#apex/18/en-US/n1999/-1/en-US";
 
         /* Make sure a web driver for this thread */
-        Assert.assertTrue(hasWebDriver(), "there should be an available webdriver");
-        WebDriver webDriver = getWebDriver();
-        log.debug("Test [{}], web driver [{}], thread [{}]", getTest().getName(),
-                webDriver.hashCode(), Thread.currentThread().getId());
+        WebDriver webDriver = getWrappedDriver();
+        log4j.debug("Test [{}], web driver [{}], thread [{}]", cosengTest.getId(), webDriver.hashCode(),
+                Thread.currentThread().getId());
+        Log log = cosengLog;
 
         /* Get the url and assure on correct route. */
-        logTestStep("navigating to url [" + url + "] and assuring help button available");
+        log.testStep("Navigating to url " + Stringer.wrapBracket(url) + " and assuring help button available");
         webDriver.get(url);
-        logAssert.assertTrue(currentUrlContains(url), "current URL should contain [" + url + "]");
+        log.hardAssert.assertTrue(webDriver.getCurrentUrl().contains(url),
+                "Current URL should contain " + Stringer.wrapBracket(url));
 
         /* Get a COSENG WebElement object, find it and assure displayed */
-        WebElement weSearchForm = newWebElement(By.xpath(searchForm));
-        weSearchForm.find();
-        logAssert.assertTrue(weSearchForm.isDisplayed(), "search form element should be displayed");
+        // TODO: Fix
+        WebElement weSearchForm = webDriver.findElement(By.xpath(searchForm));
+        log.hardAssert.assertTrue(weSearchForm.isDisplayed(), "Search form element should be displayed");
 
         /* Take a screenshot while were here */
-        logMessage("saving screenshot [bing-connect2]");
-        saveScreenshot("bing-connect2");
+        log.message("Saving screenshot " + Stringer.wrapBracket("bing-connect2"));
+        cosengWindow.saveScreenshot("bing-connect2");
 
         /* Find and save URLs on this route */
-        logMessage("finding URLs");
-        findUrls();
+        log.message("Finding URIs");
+        cosengUri.findOnRoute();
     }
 
 }

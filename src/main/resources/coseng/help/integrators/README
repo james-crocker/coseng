@@ -1,0 +1,9 @@
+To correlate VersionOne assets, attributes and associated values access the
+VersionOne REST API endpoint with a REST client and OAuth2 AccessToken.
+
+    
+    https://www9.v1host.com/<INSTANCE>/rest-1.v1/Data/StorySource
+    https://www9.v1host.com/<INSTANCE>/rest-1.v1/Data/StoryStatus
+    https://www9.v1host.com/<INSTANCE>/rest-1.v1/Data/TestCategory
+    https://www9.v1host.com/<INSTANCE>/rest-1.v1/Data/TestSource
+    ...

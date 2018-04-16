@@ -1,0 +1,52 @@
+{
+    "cosengTests": [
+        {
+            "id": "simplechrome",
+            "testNg": {
+                "suiteXml": "resource:/coseng/demo/suites/suite-files.xml",
+                "integratorsJson": ["file:versionone.json"]
+            },
+            "selenium": {
+                "browser": {
+                    "type": "chrome"
+                },
+                "webDriver": {
+                    "executable": "/usr/local/bin/chromedriver",
+                    "oneWebDriver": false
+                }
+            },
+            "coseng": {
+                "uri": {
+                    "enableFind": true,
+                    "validate": {
+                        "enable": true
+                    }
+                }
+            }
+        },
+        {
+            "id": "simplefirefox",
+            "testNg": {
+                "suiteXml": "resource:/coseng/demo/suites/suite-files.xml",
+                "integratorsJson": ["file:versionone.json"]
+            },
+            "selenium": {
+                "browser": {
+                    "type": "firefox"
+                },
+                "webDriver": {
+                    "executable": "/usr/local/bin/geckodriver",
+                    "oneWebDriver": false
+                }
+            },
+            "coseng": {
+                "uri": {
+                    "enableFind": true,
+                    "validate": {
+                        "enable": true
+                    }
+                }
+            }
+        }
+    ]
+}

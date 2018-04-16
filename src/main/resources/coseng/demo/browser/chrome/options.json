@@ -1,0 +1,5 @@
+{
+        "binary": "/usr/bin/google-chrome",
+        "args": ["--sdf"],
+        "extensions": ["/sdfds"]
+}

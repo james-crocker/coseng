@@ -19,119 +19,126 @@ package com.sios.stc.coseng.tests.demo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
-import org.testng.Assert;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.testng.annotations.Test;
 
-import com.sios.stc.coseng.run.CosengException;
-import com.sios.stc.coseng.run.CosengRunner;
-import com.sios.stc.coseng.run.WebElement;
+import com.sios.stc.coseng.runnner.Coseng;
+import com.sios.stc.coseng.runnner.Log;
+import com.sios.stc.coseng.util.Stringer;
 
-public class Ask extends CosengRunner {
+public class Ask extends Coseng {
 
-    private static final Logger log = LogManager.getLogger(Ask.class.getName());
+    private static final Logger log4j = LogManager.getLogger(Ask.class);
 
     @Test(description = "Verify connect to Ask and search")
-    public void connect1() throws CosengException {
+    public void connect1() {
         String url = "https://www.ask.com";
         String searchform = "search-box";
 
         /* Make sure a web driver for this thread */
-        Assert.assertTrue(hasWebDriver(), "there should be a web driver");
-        log.debug("Test [{}], web driver [{}], thread [{}]", getTest().getName(),
-                getWebDriver().hashCode(), Thread.currentThread().getId());
+        log4j.debug("Test [{}], web driver [{}], thread [{}]", cosengTest.getId(),
+                cosengTest.getSelenium().getWebDriverContext().getWebDrivers().getWebDriver().hashCode(),
+                Thread.currentThread().getId());
+        Log log = cosengLog;
 
+        WebDriver wd = getWrappedDriver();
         /*
-         * Get the url and assure on correct route. Note: Using the convenience
-         * method. Can always get the web driver with WebDriver webDriver =
-         * getWebDriver();
+         * Get the url and assure on correct route. Note: Using the convenience method.
+         * Can always get the web driver with WebDriver webDriver = getWebDriver();
          */
-        logTestStep("navigating to url [" + url + "] and assuring search form available]");
-        webDriverGet(url);
-        logAssert.assertTrue(currentUrlContains(url), "current URL should contain [" + url + "]");
+        log.testStep("Navigating to url " + Stringer.wrapBracket(url) + " and assuring search form available]");
+        wd.navigate().to(url);
+        log.hardAssert.assertTrue(wd.getCurrentUrl().contains(url),
+                "Current URL should contain " + Stringer.wrapBracket(url));
 
         /* Get a COSENG WebElement object, find it and assure displayed */
-        WebElement weSearchForm = newWebElement(By.id(searchform));
-        weSearchForm.find();
-        logAssert.assertTrue(weSearchForm.isDisplayed(), "search form element should be displayed");
+        WebElement weSearchForm = wd.findElement(By.id(searchform));
+        log.hardAssert.assertTrue(weSearchForm.isDisplayed(), "Search form element should be displayed");
 
-        logTestStep("test assortment of soft assertions");
+        log.testStep("Test assortment of soft assertions");
         Boolean[] b1 = { false, false };
         Boolean[] b2 = { true, true };
         Boolean[] b3 = { false, true, false };
-        logSoftAssert.assertEquals(b1.length, b3.length);
-        logSoftAssert.assertEquals(b1.length, b3.length, "withMessage");
-        logSoftAssert.assertEquals(b1.length, b2.length);
-        logSoftAssert.assertEquals(b1.length, b2.length, "withMessage");
-        logSoftAssert.assertEqualsNoOrder(b1, b2);
-        logSoftAssert.assertEqualsNoOrder(b1, b2, "withMessage");
-        logSoftAssert.assertEqualsNoOrder(b1, b1);
-        logSoftAssert.assertEqualsNoOrder(b1, b1, "withMessage");
-        logSoftAssert.assertFalse(true);
-        logSoftAssert.assertFalse(true, "withMessage");
-        logSoftAssert.assertFalse(false);
-        logSoftAssert.assertFalse(false, "withMessage");
-        logSoftAssert.assertNotEquals("aa", "aa");
-        logSoftAssert.assertNotEquals("aa", "aa", "withMessage");
-        logSoftAssert.assertNotEquals("aa", "bb");
-        logSoftAssert.assertNotEquals("aa", "bb", "withMessage");
-        logSoftAssert.assertNotNull(null);
-        logSoftAssert.assertNotNull(null, "withMessage");
-        logSoftAssert.assertNotNull("aa");
-        logSoftAssert.assertNotNull("aa", "withMessage");
-        logSoftAssert.assertNotSame(b1, b1);
-        logSoftAssert.assertNotSame(b1, b1, "withMessage");
-        logSoftAssert.assertNotSame(b1, b2);
-        logSoftAssert.assertNotSame(b1, b2, "withMessage");
-        logSoftAssert.assertNull("aa");
-        logSoftAssert.assertNull("aa", "withMessage");
-        logSoftAssert.assertNull(null);
-        logSoftAssert.assertNull(null, "withMessage");
-        logSoftAssert.assertSame(b1, b2);
-        logSoftAssert.assertSame(b1, b2, "withMessage");
-        logSoftAssert.assertSame(b1, b1);
-        logSoftAssert.assertSame(b1, b1, "withMessage");
-        logSoftAssert.assertTrue(false);
-        logSoftAssert.assertTrue(false, "withMessage");
-        logSoftAssert.assertTrue(true);
-        logSoftAssert.assertTrue(true, "withMessage");
+        log.softAssert.assertEquals(b1.length, b3.length);
+        log.softAssert.assertEquals(b1.length, b3.length, "withMessage");
+        log.softAssert.assertEquals(b1.length, b2.length);
+        log.softAssert.assertEquals(b1.length, b2.length, "withMessage");
+        log.softAssert.assertEqualsNoOrder(b1, b2);
+        log.softAssert.assertEqualsNoOrder(b1, b2, "withMessage");
+        log.softAssert.assertEqualsNoOrder(b1, b1);
+        log.softAssert.assertEqualsNoOrder(b1, b1, "withMessage");
+        log.softAssert.assertFalse(true);
+        log.softAssert.assertFalse(true, "withMessage");
+        log.softAssert.assertFalse(false);
+        log.softAssert.assertFalse(false, "withMessage");
+        log.softAssert.assertNotEquals("aa", "aa");
+        log.softAssert.assertNotEquals("aa", "aa", "withMessage");
+        log.softAssert.assertNotEquals("aa", "bb");
+        log.softAssert.assertNotEquals("aa", "bb", "withMessage");
+        log.softAssert.assertNotNull(null);
+        log.softAssert.assertNotNull(null, "withMessage");
+        log.softAssert.assertNotNull("aa");
+        log.softAssert.assertNotNull("aa", "withMessage");
+        log.softAssert.assertNotSame(b1, b1);
+        log.softAssert.assertNotSame(b1, b1, "withMessage");
+        log.softAssert.assertNotSame(b1, b2);
+        log.softAssert.assertNotSame(b1, b2, "withMessage");
+        log.softAssert.assertNull("aa");
+        log.softAssert.assertNull("aa", "withMessage");
+        log.softAssert.assertNull(null);
+        log.softAssert.assertNull(null, "withMessage");
+        log.softAssert.assertSame(b1, b2);
+        log.softAssert.assertSame(b1, b2, "withMessage");
+        log.softAssert.assertSame(b1, b1);
+        log.softAssert.assertSame(b1, b1, "withMessage");
+        log.softAssert.assertTrue(false);
+        log.softAssert.assertTrue(false, "withMessage");
+        log.softAssert.assertTrue(true);
+        log.softAssert.assertTrue(true, "withMessage");
 
         /* Take a screenshot while were here */
-        saveScreenshot("ask-connect1");
+        log.message("Saving screenshot " + Stringer.wrapBracket("ask-connect1"));
+        cosengWindow.saveScreenshot("ask-connect1");
 
         /* Find and save URLs on this route */
-        findUrls();
+        log.message("Finding URIs");
+        cosengUri.findOnRoute();
     }
 
     @Test(description = "Verify connect to Ask About and help button")
-    public void connect2() throws CosengException {
+    public void connect2() {
         String url = "https://about.ask.com";
         String helpButton = "/html/body/section/aside/button";
 
         /* Make sure a web driver for this thread */
-        Assert.assertTrue(hasWebDriver(), "there should be an available webdriver");
-        log.debug("Test [{}], web driver [{}], thread [{}]", getTest().getName(),
-                getWebDriver().hashCode(), Thread.currentThread().getId());
+        log4j.debug("Test [{}], web driver [{}], thread [{}]", cosengTest.getId(),
+                cosengTest.getSelenium().getWebDriverContext().getWebDrivers().getWebDriver().hashCode(),
+                Thread.currentThread().getId());
+        Log log = cosengLog;
+
+        WebDriver wd = getWrappedDriver();
 
         /*
-         * Get the url and assure on correct route. Note: Using the convenience
-         * method. Can always get the web driver with WebDriver webDriver =
-         * getWebDriver();
+         * Get the url and assure on correct route. Note: Using the convenience method.
+         * Can always get the web driver with WebDriver webDriver = getWebDriver();
          */
-        logTestStep("navigating to url [" + url + "] and assuring help button available");
-        webDriverGet(url);
-        logAssert.assertTrue(currentUrlContains(url), "current URL should contain [" + url + "]");
+        log.testStep("Navigating to url " + Stringer.wrapBracket(url) + " and assuring help button available");
+        wd.navigate().to(url);
+        log.hardAssert.assertTrue(wd.getCurrentUrl().contains(url),
+                "current URL should contain " + Stringer.wrapBracket(url));
 
         /* Get a COSENG WebElement object, find it and assure displayed */
-        WebElement weHelpButton = newWebElement(By.xpath(helpButton));
-        weHelpButton.find();
-        logAssert.assertTrue(weHelpButton.isDisplayed(), "help button should be displayed");
+        WebElement weHelpButton = wd.findElement(By.xpath(helpButton));
+        log.hardAssert.assertTrue(weHelpButton.isDisplayed(), "Help button should be displayed");
 
         /* Take a screenshot while were here */
-        saveScreenshot("ask-connect2");
+        log.message("Saving screenshot " + Stringer.wrapBracket("ask-connect2"));
+        cosengWindow.saveScreenshot("ask-connect2");
 
         /* Find and save URLs on this route */
-        findUrls();
-        logMessage("a message");
+        log.message("Finding URIs");
+        cosengUri.findOnRoute();
     }
 
 }

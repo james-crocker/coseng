@@ -17,6 +17,7 @@
 package com.sios.stc.coseng;
 
 import com.sios.stc.coseng.run.CosengTests;
+import com.sios.stc.coseng.run.Tests;
 
 /**
  * The Class RunTests. The public main class for executing Concurrent Selenium
@@ -25,26 +26,40 @@ import com.sios.stc.coseng.run.CosengTests;
  * @since 2.0
  * @version.coseng
  */
-public class RunTests extends CosengTests {
+public final class RunTests extends CosengTests {
 
     /**
      * The main method for executing Concurrent Selenium TestNG (COSENG) suites.
-     * Requires a Tests JSON resource and an optional Node JSON resource.
-     * Extends CosengTests so as to keep the majority of com.sios.stc.coseng.run
-     * private or protected.
+     * Requires a Tests JSON resource and an optional Node JSON resource. Extends
+     * CosengTests so as to keep the majority of com.sios.stc.coseng.run private or
+     * protected.
      *
      * @param args
-     *            the command line arguments to configure a COSENG test
-     *            execution; -help for usage and options
+     *            the command line arguments to configure a COSENG test execution;
+     *            -help for usage and options
      * @see com.sios.stc.coseng.run.CosengTests#with(String[])
-     * @see com.sios.stc.coseng.run.Node
+     * @see com.sios.stc.coseng.run.BrowserNode.browser.SeleniumNode
      * @see com.sios.stc.coseng.run.Test
      * @see com.sios.stc.coseng.run.Tests
      * @since 2.0
      * @version.coseng
      */
+
     public static void main(final String[] args) {
-        with(args);
+        /*-
+         * 
+         * TODO
+         * Known Issues: 2018-03-23
+         *   # 4Core/8Thread CPU - TestNG SuiteXML thread-count="4|6" (Default: 5)
+         *     Have seen where <test> starts but <include> method does not execute. 3 layer <suite> of <suite-files>
+         *     106 discrete tests with mix of parallel modes. If started/stopped web driver count mismatch
+         *     A test method was likely skipped. Haven't reliably reproduced the error;.
+         *   # TestNG Listener, spurious parallel="none" Suite START & FINISH before Executor FINISH
+         * 
+         */
+        Global.set();
+        Tests tests = CliArgument.getTests(args);
+        CosengTests.run(tests);
     }
 
 }

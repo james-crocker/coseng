@@ -19,59 +19,60 @@ package com.sios.stc.coseng.tests.demo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
-import org.testng.Assert;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.testng.annotations.Test;
 
-import com.sios.stc.coseng.RunTests;
-import com.sios.stc.coseng.run.Browsers.Browser;
-import com.sios.stc.coseng.run.CosengException;
-import com.sios.stc.coseng.run.CosengRunner;
-import com.sios.stc.coseng.run.WebElement;
+import com.sios.stc.coseng.run.SeleniumBrowser.Browser;
+import com.sios.stc.coseng.runnner.Coseng;
+import com.sios.stc.coseng.runnner.Log;
+import com.sios.stc.coseng.util.Stringer;
 
-public class DuckDuckGo extends CosengRunner {
+public class DuckDuckGo extends Coseng {
 
-    private static final Logger log = LogManager.getLogger(RunTests.class.getName());
+    private static final Logger log4j = LogManager.getLogger(DuckDuckGo.class);
 
     @Test(description = "Verify connect to DuckDuckGo and search")
-    public void connect1() throws CosengException {
+    public void connect1() {
         String searchForm = "search_form_input_homepage";
         String url = "https://www.duckduckgo.com";
         String redirectedUrl = "https://duckduckgo.com";
 
         /* Make sure a web driver for this thread */
-        Assert.assertTrue(hasWebDriver(), "there should be a web driver");
-        log.debug("Test [{}], web driver [{}], thread [{}]", getTest().getName(),
-                getWebDriver().hashCode(), Thread.currentThread().getId());
+        log4j.debug("Test [{}], web driver [{}], thread [{}]", cosengTest.getId(),
+                cosengTest.getSelenium().getWebDriverContext().getWebDrivers().getWebDriver().hashCode(),
+                Thread.currentThread().getId());
+        Log log = cosengLog;
 
-        Browser browser = getTest().getBrowser();
+        Browser browser = cosengTest.getSelenium().getBrowser().getType();
+
+        WebDriver wd = getWrappedDriver();
 
         /*
-         * Get the url and assure on correct route. Note: Using the convenience
-         * method. Can always get the web driver with WebDriver webDriver =
-         * getWebDriver();
+         * Get the url and assure on correct route. Note: Using the convenience method.
+         * Can always get the web driver with WebDriver webDriver = getWebDriver();
          */
-        logTestStep("navigating to url [" + url + "] and assuring search form available");
-        webDriverGet(url);
-        logAssert.assertTrue(currentUrlContains(redirectedUrl),
-                "Current URL contains " + redirectedUrl);
+        log.testStep("Navigating to url " + Stringer.wrapBracket(url) + " and assuring search form available");
+
+        wd.navigate().to(url);
+        log.hardAssert.assertTrue(wd.getCurrentUrl().contains(redirectedUrl),
+                "Current URL contains " + Stringer.wrapBracket(redirectedUrl));
 
         /* Get a COSENG WebElement object, find it and assure displayed */
-        WebElement weSearchForm = newWebElement(By.id(searchForm));
-        Assert.assertTrue(weSearchForm.find());
+        WebElement weSearchForm = wd.findElement(By.id(searchForm));
         if (!Browser.EDGE.equals(browser)) {
-            logAssert.assertTrue(weSearchForm.isDisplayed(),
-                    "search form element should be displayed");
+            log.hardAssert.assertTrue(weSearchForm.isDisplayed(), "Search form element should be displayed");
         } else {
-            logSkipTestForBrowser();
+            log.skipTestForBrowser();
         }
 
         /* Take a screenshot while were here */
-        logMessage("saving screenshot [duckDuckGo-connect1]");
-        saveScreenshot("duckDuckGo-connect1");
+        log.message("Saving screenshot " + Stringer.wrapBracket("duckDuckGo-connect1"));
+        cosengWindow.saveScreenshot("duckDuckGo-connect1");
 
         /* Find and save URLs on this route */
-        logMessage("finding URLs");
-        findUrls();
+        log.message("Finding URIs");
+        cosengUri.findOnRoute();
     }
 
 }

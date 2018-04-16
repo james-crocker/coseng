@@ -1,0 +1,54 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="ParallelTests" preserve-order="true" parallel="tests">
+  <test name="Google_connect2" parallel="false">
+    <classes>
+      <class name="com.sios.stc.coseng.tests.demo.Google">
+        <methods>
+                <parameter name="testCharge" value="positive"/>
+            <include name=".*"/>
+        </methods>
+      </class>
+    </classes>
+  </test>
+  <test name="Google_connect1">
+    <groups>
+        <define name="one">
+            <include name="connect1x"/>
+        </define>
+        <define name="all">
+            <include name="one"/>
+            <include name="connect2x"/> 
+        </define>
+        <run>
+            <include name="a.*"/>
+        </run>
+    </groups>
+    <classes>
+      <class name="com.sios.stc.coseng.tests.demo.Google">
+        <methods>
+            <include name=".*"/>
+        </methods>
+      </class>
+    </classes>
+  </test>
+  <test name="Bing_connect1">
+    <groups>
+        <run>
+            <include name="all"/>
+        </run>
+    </groups>
+    <classes>
+      <class name="com.sios.stc.coseng.tests.demo.Bing"/>
+    </classes>
+  </test>
+  <test name="Bing_connect2">
+    <classes>
+      <class name="com.sios.stc.coseng.tests.demo.Bing">
+        <methods>
+            <include name="connect.*"/>
+        </methods>
+      </class>
+    </classes>
+  </test>
+</suite>

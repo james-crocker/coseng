@@ -27,11 +27,11 @@ import com.google.gson.annotations.SerializedName;
  * @since 3.0
  * @version.coseng
  */
-public class Oid {
+public final class Oid {
 
     @SerializedName("_oid")
     @Expose
-    private final String oid = null;
+    private String oid = null;
 
     /**
      * Gets the id.
@@ -41,9 +41,8 @@ public class Oid {
      * @version.coseng
      */
     public String getId() {
-        if (oid != null) {
+        if (oid != null)
             return oid;
-        }
         return StringUtils.EMPTY;
     }
 

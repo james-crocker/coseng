@@ -33,13 +33,15 @@
  */
 package com.sios.stc.coseng.integration.versionone;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import com.google.gson.annotations.Expose;
-import com.sios.stc.coseng.integration.Integrator.TriggerOn;
+import com.sios.stc.coseng.Triggers.Phase;
+import com.sios.stc.coseng.Triggers.TriggerOn;
+import com.sios.stc.coseng.integration.versionone.Common.V1Attr;
 
 /**
  * The Class Backlog.
@@ -47,46 +49,61 @@ import com.sios.stc.coseng.integration.Integrator.TriggerOn;
  * @since 3.0
  * @version.coseng
  */
-public class Backlog {
+public final class Backlog {
 
     @Expose
-    private final String      titlePrefix = null;
+    private String      namePrefix = null;
     @Expose
-    private final List<Field> fields      = null;
+    private List<Field> fields     = null;
 
-    /**
-     * Gets the title prefix.
-     *
-     * @return the title prefix
-     * @since 3.0
-     * @version.coseng
-     */
-    public String getTitlePrefix() {
-        if (titlePrefix != null) {
-            return titlePrefix;
-        }
+    /* Backlog odd duck that can be updated in many triggerOn/phases. */
+
+    public String getNamePrefix() {
+        if (namePrefix != null)
+            return namePrefix;
         return StringUtils.EMPTY;
     }
 
-    /**
-     * Gets the fields.
-     *
-     * @param trigger
-     *            the trigger
-     * @return the fields
-     * @since 3.0
-     * @version.coseng
-     */
-    public List<Field> getFields(TriggerOn trigger) {
-        List<Field> matchedFields = new ArrayList<Field>();
-        if (trigger != null && fields != null) {
-            for (Field field : fields) {
-                if (trigger.equals(field.getTriggerOn())) {
-                    matchedFields.add(field);
-                }
-            }
+    public String getName() {
+        return Common.getValue(fields, V1Attr.NAME.get(), TriggerOn.TESTNGEXECUTION, Phase.START);
+    }
+
+    public void setName(String name) {
+        if (name != null) {
+            /* Sets with TestNG test details. */
+            Common.setOrAddField(true, fields, V1Attr.NAME.get(), name, TriggerOn.TESTNGEXECUTION, Phase.START);
+            /* Sets/Adds web driver details. */
+            Common.setOrAddField(true, fields, V1Attr.NAME.get(), name, TriggerOn.TESTNGMETHOD, Phase.START);
+            Common.setOrAddField(true, fields, V1Attr.NAME.get(), name, TriggerOn.TESTNGMETHOD, Phase.FINISH);
         }
-        return matchedFields;
+    }
+
+    public String getDescription() {
+        return Common.getValue(fields, V1Attr.DESCRIPTION.get(), TriggerOn.TESTNGEXECUTION, Phase.START);
+    }
+
+    public void setDescription(String description) {
+        if (description != null) {
+            /* Sets with COSENG test detail. */
+            Common.setOrAddField(true, fields, V1Attr.DESCRIPTION.get(), description, TriggerOn.TESTNGEXECUTION,
+                    Phase.START);
+            /* Sets/Adds web driver detail. */
+            Common.setOrAddField(true, fields, V1Attr.DESCRIPTION.get(), description, TriggerOn.TESTNGMETHOD,
+                    Phase.START);
+            Common.setOrAddField(true, fields, V1Attr.DESCRIPTION.get(), description, TriggerOn.TESTNGMETHOD,
+                    Phase.FINISH);
+            /* Sets/Adds TestNG test results. */
+            Common.setOrAddField(true, fields, V1Attr.DESCRIPTION.get(), description, TriggerOn.COSENG, Phase.FINISH);
+        }
+    }
+
+    void setTimebox(String sprintOid) {
+        fields.add(
+                new Field(V1Attr.TIMEBOX.get(), StringUtils.EMPTY, sprintOid, TriggerOn.TESTNGEXECUTION, Phase.START));
+    }
+
+    List<Field> getFields(TriggerOn trigger, Phase phase) {
+        return Common.getFields(fields, trigger, phase);
     }
 
     /**
@@ -100,15 +117,13 @@ public class Backlog {
      * @since 3.0
      * @version.coseng
      */
-    public Field getField(String attribute, TriggerOn trigger) {
-        if (attribute != null && !attribute.isEmpty()) {
-            for (Field field : getFields(trigger)) {
-                if (attribute.equals(field.getAttribute())) {
-                    return field;
-                }
-            }
-        }
-        return new Field();
+    Field getField(String attribute, TriggerOn trigger, Phase phase) {
+        return Common.getField(fields, attribute, trigger, phase);
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
     }
 
 }

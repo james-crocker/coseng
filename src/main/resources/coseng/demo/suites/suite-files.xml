@@ -1,9 +1,93 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="Suite" preserve-order="true">
-  <suite-files>
-    <!-- <suite-file path="coseng/demo/suites/tests.xml"></suite-file>
-    <suite-file path="coseng/demo/suites/classes.xml"></suite-file>  -->
-    <suite-file path="coseng/demo/suites/methods.xml"></suite-file>
+<suite name="SuiteBig" preserve-order="true" parallel="false" thread-count="5">
+   <suite-files>
+    <suite-file path="resource:/coseng/demo/suites/complexTests.xml"></suite-file>
+    <suite-file path="resource:/coseng/demo/suites/classes.xml"></suite-file>
+    <suite-file path="resource:/coseng/demo/suites/methods.xml"></suite-file>
+    <suite-file path="resource:/coseng/demo/suites/instances.xml"></suite-file>
   </suite-files>
+  <!-- <test name="TOP1">
+    <classes>
+      <class name="com.sios.stc.coseng.tests.demo.Google">
+        <methods>
+          <include name="connect2" />
+          <include name="connect1" />
+        </methods>
+      </class>
+     <class name="com.sios.stc.coseng.tests.demo.Bing">
+        <methods>
+          <include name="connect2" />
+          <include name="connect1" />
+        </methods>
+      </class>
+    </classes>
+  </test>
+  <test name="TOPX">
+    <classes>
+      <class name="com.sios.stc.coseng.tests.demo.Ask">
+        <methods>
+          <include name="connect2" />
+          <include name="connect1" />
+        </methods>
+      </class>
+      <class name="com.sios.stc.coseng.tests.demo.DuckDuckGo">
+        <methods>
+          <include name="connect1" />
+        </methods>
+      </class>
+    </classes>
+  </test>
+  <suite-files>
+    <suite-file path="resource:/coseng/demo/suites/tests.xml"></suite-file>
+    <suite-file path="resource:/coseng/demo/suites/classes.xml"></suite-file>
+    <suite-file path="resource:/coseng/demo/suites/methods.xml"></suite-file>
+    <suite-file path="resource:/coseng/demo/suites/instances.xml"></suite-file>
+    <suite-file path="resource:/coseng/demo/suites/more-suites.xml"></suite-file>
+  </suite-files>
+  <test name="TOP2">
+    <classes>
+      <class name="com.sios.stc.coseng.tests.demo.Google">
+        <methods>
+          <include name="connect1" />
+          <include name="connect2" />
+        </methods>
+      </class>
+      <class name="com.sios.stc.coseng.tests.demo.Bing">
+        <methods>
+          <include name="connect1" />
+          <include name="connect2" />
+        </methods>
+      </class>
+    </classes>
+  </test>
+  <suite-files>
+    <suite-file path="resource:/coseng/demo/suites/instances.xml"></suite-file>
+    <suite-file path="resource:/coseng/demo/suites/methods.xml"></suite-file>
+    <suite-file path="resource:/coseng/demo/suites/classes.xml"></suite-file>
+    <suite-file path="resource:/coseng/demo/suites/tests.xml"></suite-file>
+    <suite-file path="resource:/coseng/demo/suites/yet-more-suites.xml"></suite-file>
+  </suite-files>
+  <suite-files>
+    <suite-file path="resource:/coseng/demo/suites/tests.xml"></suite-file>
+    <suite-file path="resource:/coseng/demo/suites/classes.xml"></suite-file>
+    <suite-file path="resource:/coseng/demo/suites/methods.xml"></suite-file>
+    <suite-file path="resource:/coseng/demo/suites/instances.xml"></suite-file>
+    <suite-file path="resource:/coseng/demo/suites/more-suites.xml"></suite-file>
+  </suite-files>
+  <test name="TOP3">
+    <classes>
+      <class name="com.sios.stc.coseng.tests.demo.Ask">
+        <methods>
+          <include name="connect2" />
+          <include name="connect1" />
+        </methods>
+      </class>
+      <class name="com.sios.stc.coseng.tests.demo.DuckDuckGo">
+        <methods>
+          <include name="connect1" />
+        </methods>
+      </class>
+    </classes>
+  </test> -->
 </suite>

@@ -17,21 +17,20 @@
 package com.sios.stc.coseng.util;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedHashMap;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import org.apache.commons.lang.StringUtils;
 
-import org.apache.commons.lang3.time.StopWatch;
+import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.UnexpectedPage;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebClientOptions;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * The Class Http offers conveniences to discern state of Http resrouces.
@@ -39,182 +38,123 @@ import org.apache.commons.lang3.time.StopWatch;
  * @since 2.1
  * @version.coseng
  */
-public class Http {
+public final class Http {
 
-    private static final String         sysPropUserAgent     = "http.agent";
-    private static final String         requestMethodDefault = "HEAD";
-    private static final String         userAgentNew         =
-            "Mozilla/5.0 (X11; Linux x86_64; rv:49.0) Gecko/20100101 Firefox/49.0";
-    private static int                  millisTimeoutDefault = 3000;
-    private static Map<String, Integer> urlsResponseCode     = new HashMap<String, Integer>();
+    private static Integer responseCodeDefault    = 0;
+    private static String  responseMessageDefault = Stringer.UNKNOWN;
 
-    /**
-     * Checks if http url is accessible.
-     *
-     * @param url
-     *            the url
-     * @return true, if is accessible
-     * @see com.sios.stc.coseng.util.Http#isAccessible(String, Integer)
-     * @since 2.1
-     * @version.coseng
-     */
-    public static boolean isAccessible(String url) {
-        return isAccessible(url, null);
-    }
+    /* Use URI rather than URL to avoid blocking with equals */
+    private static LinkedHashMap<URI, Integer> urisResponseCode    = new LinkedHashMap<URI, Integer>();
+    private static LinkedHashMap<URI, String>  urisResponseMessage = new LinkedHashMap<URI, String>();
+    private static LinkedHashMap<URI, Boolean> urisPassFail        = new LinkedHashMap<URI, Boolean>();
 
-    /**
-     * Checks if http url is accessible.
-     *
-     * @param url
-     *            the url
-     * @param millisTimeout
-     *            the millisecond timeout
-     * @return true, if is accessible
-     * @see com.sios.stc.coseng.util.Http#connect(String, Integer, String,
-     *      boolean)
-     * @see com.sios.stc.coseng.util.Http#accessibleResponseCode(int)
-     * @since 2.1
-     * @version.coseng
-     */
-    public static boolean isAccessible(String url, Integer millisTimeout) {
-        int responseCode = connect(url, millisTimeout, null, false);
-        boolean isAccessible = false;
-        /* Any 200 level through 300 level identified as success */
-        if (accessibleResponseCode(responseCode)) {
-            isAccessible = true;
-        } else {
-            /* Attempt again with modified user agent */
-            responseCode = connect(url, millisTimeout, null, true);
-            if (accessibleResponseCode(responseCode)) {
-                isAccessible = true;
-            }
-        }
-        urlsResponseCode.put(url, responseCode);
-        return isAccessible;
-    }
-
-    /**
-     * Accessible response code. Response code >= 200 and <= 399 is considered
-     * accessible.
-     *
-     * @param responseCode
-     *            the status code
-     * @return true, if successful
-     * @see com.sios.stc.coseng.util.Http#isAccessible(String, Integer)
-     * @since 2.1
-     * @version.coseng
-     */
-    private static boolean accessibleResponseCode(int responseCode) {
-        if (responseCode >= 200 && responseCode <= 399) {
-            return true;
+    public static boolean isAccessible(URL url) {
+        try {
+            URI uri = new URI(url.toExternalForm());
+            if (urisPassFail.containsKey(uri))
+                return urisPassFail.get(uri);
+        } catch (Exception ignore) {
+            // do nothing
         }
         return false;
     }
 
-    /**
-     * Gets the url response code.
-     *
-     * @param url
-     *            the url
-     * @return the url response code
-     * @since 2.1
-     * @version.coseng
-     */
-    public static Integer getResponseCode(String url) {
-        if (!urlsResponseCode.containsKey(url)) {
-            isAccessible(url);
+    public static Integer getResponseCode(URL url) {
+        try {
+            URI uri = new URI(url.toExternalForm());
+            if (urisResponseCode.containsKey(uri))
+                return urisResponseCode.get(uri);
+        } catch (Exception ignore) {
+            // do nothing
         }
-        return urlsResponseCode.get(url);
+        return responseCodeDefault;
     }
 
-    /**
-     * Connect. Accepts invalid SSL certs. Derived code.
-     * 
-     * @link http://stackoverflow.com/questions/13778635/checking-status-of-website-in-java
-     * @link http://stackexchange.com/users/347553/bhavik-ambani
-     * @link http://stackoverflow.com/questions/41692736/all-trusting-hostnameverifier-causes-ssl-errors-with-httpurlconnection
-     * @link https://opensource.org/licenses/MIT
-     * @author Bhavik Ambani
-     * @author James B. Crocker
-     *
-     * @param url
-     *            the url
-     * @param millisTimeout
-     *            the millis timeout
-     * @return the int
-     * @see com.sios.stc.coseng.util.Http#isAccessible(String, Integer)
-     * @since 2.1
-     * @version.coseng
-     */
-    private static int connect(String url, Integer millisTimeout, String requestMethod,
-            boolean changeUserAgent) {
-        if (url != null && !url.isEmpty()) {
-            String userAgentOriginal = System.getProperty(sysPropUserAgent);
-            if (millisTimeout == null || millisTimeout <= 0) {
-                millisTimeout = millisTimeoutDefault;
-            }
-            if (requestMethod == null || requestMethod.isEmpty()) {
-                requestMethod = requestMethodDefault;
-            }
-            /* Fake out the user agent when asked */
-            if (changeUserAgent) {
-                System.setProperty(sysPropUserAgent, userAgentNew);
-            }
-
-            /* Create trust manager for all certs */
-            TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
-                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                    return null;
-                }
-
-                public void checkClientTrusted(java.security.cert.X509Certificate[] certs,
-                        String authType) {
-                }
-
-                public void checkServerTrusted(java.security.cert.X509Certificate[] certs,
-                        String authType) {
-                }
-            } };
-
-            /* Install the all-trusting trust manager */
-            try {
-                SSLContext sc = SSLContext.getInstance("SSL");
-                sc.init(null, trustAllCerts, new java.security.SecureRandom());
-                HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-            } catch (KeyManagementException | NoSuchAlgorithmException e1) {
-                // do nothing; will be 0
-            }
-
-            /* Don't verify host names */
-            HostnameVerifier hv = new HostnameVerifier() {
-                public boolean verify(String urlHostName, SSLSession session) {
-                    return true;
-                }
-            };
-            HttpsURLConnection.setDefaultHostnameVerifier(hv);
-
-            StopWatch stopWatch = new StopWatch();
-            stopWatch.start();
-            do {
-                try {
-                    HttpURLConnection connection =
-                            (HttpURLConnection) new URL(url).openConnection();
-                    connection.setConnectTimeout(millisTimeout);
-                    connection.setReadTimeout(millisTimeout);
-                    connection.setRequestMethod(requestMethod);
-                    int responseCode = connection.getResponseCode();
-                    /* Change back to original user agent if changed */
-                    if (changeUserAgent && userAgentOriginal != null) {
-                        System.setProperty(sysPropUserAgent, userAgentOriginal);
-                    }
-                    return responseCode;
-                } catch (IOException | ClassCastException e) {
-                    // do nothing; will be 0
-                }
-            } while (stopWatch.getTime() < millisTimeout);
-            stopWatch.stop();
+    public static String getResponseMessage(URL url) {
+        try {
+            URI uri = new URI(url.toExternalForm());
+            if (urisResponseMessage.containsKey(uri))
+                return urisResponseMessage.get(uri);
+        } catch (Exception ignore) {
+            // do nothing
         }
-        return 0;
+        return responseMessageDefault;
+    }
+
+    public static String connect(URL url, HttpMethod requestMethod, BrowserVersion browserVersion,
+            Integer millisTimeout, Boolean useInsecureSsl, Boolean enableJavaScript, Boolean enableCss,
+            Boolean enableDownloadImages) {
+        Integer responseCode = responseCodeDefault;
+        String responseMessage = responseMessageDefault;
+        String messageBody = StringUtils.EMPTY;
+        try {
+            URI uri = new URI(url.toExternalForm());
+            /* Only connect once for any given URI */
+            if (!hasResponse(uri)) {
+                if (requestMethod == null)
+                    requestMethod = HttpMethod.GET;
+                if (browserVersion == null)
+                    browserVersion = BrowserVersion.BEST_SUPPORTED;
+                if (millisTimeout == null || millisTimeout < 0)
+                    millisTimeout = 3000;
+                if (useInsecureSsl == null)
+                    useInsecureSsl = false;
+                if (enableJavaScript == null)
+                    enableJavaScript = false;
+                if (enableCss == null)
+                    enableCss = false;
+                if (enableDownloadImages == null)
+                    enableDownloadImages = false;
+                try {
+                    WebRequest webRequest = new WebRequest(url, requestMethod);
+                    WebClient webClient = new WebClient(browserVersion);
+                    WebClientOptions webClientOptions = webClient.getOptions();
+                    webClientOptions.setPrintContentOnFailingStatusCode(false);
+                    webClientOptions.setThrowExceptionOnFailingStatusCode(true);
+                    webClientOptions.setThrowExceptionOnScriptError(false);
+                    webClientOptions.setUseInsecureSSL(useInsecureSsl);
+                    webClientOptions.setTimeout(millisTimeout);
+                    webClientOptions.setJavaScriptEnabled(enableJavaScript);
+                    webClientOptions.setCssEnabled(enableCss);
+                    webClientOptions.setDownloadImages(enableDownloadImages);
+                    Object page = null;
+                    page = webClient.getPage(webRequest);
+                    webClient.close();
+                    if (page instanceof UnexpectedPage) {
+                        responseCode = ((UnexpectedPage) page).getWebResponse().getStatusCode();
+                        responseMessage = ((UnexpectedPage) page).getWebResponse().getStatusMessage();
+                        messageBody = ((UnexpectedPage) page).getWebResponse().getContentAsString();
+                    } else if (page instanceof HtmlPage) {
+                        responseCode = ((HtmlPage) page).getWebResponse().getStatusCode();
+                        responseMessage = ((HtmlPage) page).getWebResponse().getStatusMessage();
+                        messageBody = ((HtmlPage) page).getWebResponse().getContentAsString();
+                    }
+                    urisResponseCode.put(uri, responseCode);
+                    urisResponseMessage.put(uri, responseMessage);
+                    urisPassFail.put(uri, true);
+                } catch (FailingHttpStatusCodeException | IOException e) {
+                    if (e instanceof FailingHttpStatusCodeException)
+                        responseCode = ((FailingHttpStatusCodeException) e).getStatusCode();
+                    urisResponseCode.put(uri, responseCode);
+                    urisResponseMessage.put(uri, e.getMessage());
+                    urisPassFail.put(uri, false);
+                }
+            } else {
+                urisResponseCode.put(uri, responseCode);
+                urisResponseMessage.put(uri, responseMessage);
+                urisPassFail.put(uri, false);
+            }
+        } catch (Exception ignoree) {
+            // do nothing
+        }
+        return messageBody;
+    }
+
+    private static boolean hasResponse(URI uri) {
+        if (uri != null && urisResponseCode.containsKey(uri) && urisResponseMessage.containsKey(uri)
+                && urisPassFail.containsKey(uri))
+            return true;
+        return false;
     }
 
 }

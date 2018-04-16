@@ -16,10 +16,11 @@
  */
 package com.sios.stc.coseng.integration.versionone;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import com.google.gson.annotations.Expose;
-import com.sios.stc.coseng.integration.Integrator;
+import com.sios.stc.coseng.Triggers.Phase;
+import com.sios.stc.coseng.Triggers.TriggerOn;
 
 /**
  * The Class Field.
@@ -27,61 +28,25 @@ import com.sios.stc.coseng.integration.Integrator;
  * @since 3.0
  * @version.coseng
  */
-public class Field {
+public final class Field {
 
     @Expose
-    private String               attribute = null;
+    private String    attribute = null;
     @Expose
-    private String               name      = null;
+    private String    name      = null;
     @Expose
-    private String               value     = null;
+    private String    value     = null;
     @Expose
-    private Integrator.TriggerOn triggerOn = null;
+    private TriggerOn triggerOn = null;
+    @Expose
+    private Phase     phase     = null;
 
-    /**
-     * Instantiates a new field.
-     *
-     * @since 3.0
-     * @version.coseng
-     */
-    protected Field() {
-        // do nothing
-    }
-
-    /**
-     * Instantiates a new field.
-     *
-     * @param field
-     *            the field
-     * @since 3.0
-     * @version.coseng
-     */
-    protected Field(Field field) {
-        this.attribute = field.attribute;
-        this.name = field.name;
-        this.value = field.value;
-        this.triggerOn = field.triggerOn;
-    }
-
-    /**
-     * Instantiates a new field.
-     *
-     * @param attribute
-     *            the attribute
-     * @param name
-     *            the name
-     * @param value
-     *            the value
-     * @param triggerOn
-     *            the triggerOn
-     * @since 3.0
-     * @version.coseng
-     */
-    protected Field(String attribute, String name, String value, Integrator.TriggerOn triggerOn) {
+    Field(String attribute, String name, String value, TriggerOn triggerOn, Phase phase) {
         this.attribute = attribute;
         this.name = name;
         this.value = value;
         this.triggerOn = triggerOn;
+        this.phase = phase;
     }
 
     /**
@@ -91,11 +56,8 @@ public class Field {
      * @since 3.0
      * @version.coseng
      */
-    public String getAttribute() {
-        if (attribute != null) {
-            return attribute;
-        }
-        return StringUtils.EMPTY;
+    String getAttribute() {
+        return attribute;
     }
 
     /**
@@ -105,11 +67,8 @@ public class Field {
      * @since 3.0
      * @version.coseng
      */
-    public String getName() {
-        if (name != null) {
-            return name;
-        }
-        return StringUtils.EMPTY;
+    String getName() {
+        return name;
     }
 
     /**
@@ -119,50 +78,27 @@ public class Field {
      * @since 3.0
      * @version.coseng
      */
-    public String getValue() {
-        if (value != null) {
-            return value;
-        }
-        return StringUtils.EMPTY;
+    String getValue() {
+        return value;
     }
 
-    /**
-     * Sets the value.
-     *
-     * @param value
-     *            the new value
-     * @since 3.0
-     * @version.coseng
-     */
-    protected void setValue(String value) {
-        if (value != null && !value.isEmpty()) {
+    void setValue(String value) {
+        if (value != null) {
             this.value = value;
         }
     }
 
-    /**
-     * Gets the triggerOn.
-     *
-     * @return the triggerOn
-     * @since 3.0
-     * @version.coseng
-     */
-    public Integrator.TriggerOn getTriggerOn() {
-        if (triggerOn != null) {
-            return triggerOn;
-        }
-        return Integrator.TriggerOn.UNKNOWN;
+    TriggerOn getTriggerOn() {
+        return triggerOn;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
+    Phase getPhase() {
+        return phase;
+    }
+
     @Override
     public String toString() {
-        return "attribute [" + this.getAttribute() + "], name [" + this.getName() + "], value ["
-                + this.getValue() + "], triggerOn [" + this.getTriggerOn().toString() + "]";
+        return ReflectionToStringBuilder.toString(this);
     }
 
 }
