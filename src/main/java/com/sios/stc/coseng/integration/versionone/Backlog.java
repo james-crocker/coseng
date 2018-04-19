@@ -39,7 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import com.google.gson.annotations.Expose;
-import com.sios.stc.coseng.Triggers.Phase;
+import com.sios.stc.coseng.Triggers.TestPhase;
 import com.sios.stc.coseng.Triggers.TriggerOn;
 import com.sios.stc.coseng.integration.versionone.Common.V1Attr;
 
@@ -65,44 +65,45 @@ public final class Backlog {
     }
 
     public String getName() {
-        return Common.getValue(fields, V1Attr.NAME.get(), TriggerOn.TESTNGEXECUTION, Phase.START);
+        return Common.getValue(fields, V1Attr.NAME.get(), TriggerOn.TESTNGEXECUTION, TestPhase.START);
     }
 
     public void setName(String name) {
         if (name != null) {
             /* Sets with TestNG test details. */
-            Common.setOrAddField(true, fields, V1Attr.NAME.get(), name, TriggerOn.TESTNGEXECUTION, Phase.START);
+            Common.setOrAddField(true, fields, V1Attr.NAME.get(), name, TriggerOn.TESTNGEXECUTION, TestPhase.START);
             /* Sets/Adds web driver details. */
-            Common.setOrAddField(true, fields, V1Attr.NAME.get(), name, TriggerOn.TESTNGMETHOD, Phase.START);
-            Common.setOrAddField(true, fields, V1Attr.NAME.get(), name, TriggerOn.TESTNGMETHOD, Phase.FINISH);
+            Common.setOrAddField(true, fields, V1Attr.NAME.get(), name, TriggerOn.TESTNGMETHOD, TestPhase.START);
+            Common.setOrAddField(true, fields, V1Attr.NAME.get(), name, TriggerOn.TESTNGMETHOD, TestPhase.FINISH);
         }
     }
 
     public String getDescription() {
-        return Common.getValue(fields, V1Attr.DESCRIPTION.get(), TriggerOn.TESTNGEXECUTION, Phase.START);
+        return Common.getValue(fields, V1Attr.DESCRIPTION.get(), TriggerOn.TESTNGEXECUTION, TestPhase.START);
     }
 
     public void setDescription(String description) {
         if (description != null) {
             /* Sets with COSENG test detail. */
             Common.setOrAddField(true, fields, V1Attr.DESCRIPTION.get(), description, TriggerOn.TESTNGEXECUTION,
-                    Phase.START);
+                    TestPhase.START);
             /* Sets/Adds web driver detail. */
             Common.setOrAddField(true, fields, V1Attr.DESCRIPTION.get(), description, TriggerOn.TESTNGMETHOD,
-                    Phase.START);
+                    TestPhase.START);
             Common.setOrAddField(true, fields, V1Attr.DESCRIPTION.get(), description, TriggerOn.TESTNGMETHOD,
-                    Phase.FINISH);
+                    TestPhase.FINISH);
             /* Sets/Adds TestNG test results. */
-            Common.setOrAddField(true, fields, V1Attr.DESCRIPTION.get(), description, TriggerOn.COSENG, Phase.FINISH);
+            Common.setOrAddField(true, fields, V1Attr.DESCRIPTION.get(), description, TriggerOn.COSENG,
+                    TestPhase.FINISH);
         }
     }
 
     void setTimebox(String sprintOid) {
-        fields.add(
-                new Field(V1Attr.TIMEBOX.get(), StringUtils.EMPTY, sprintOid, TriggerOn.TESTNGEXECUTION, Phase.START));
+        fields.add(new Field(V1Attr.TIMEBOX.get(), StringUtils.EMPTY, sprintOid, TriggerOn.TESTNGEXECUTION,
+                TestPhase.START));
     }
 
-    List<Field> getFields(TriggerOn trigger, Phase phase) {
+    List<Field> getFields(TriggerOn trigger, TestPhase phase) {
         return Common.getFields(fields, trigger, phase);
     }
 
@@ -117,7 +118,7 @@ public final class Backlog {
      * @since 3.0
      * @version.coseng
      */
-    Field getField(String attribute, TriggerOn trigger, Phase phase) {
+    Field getField(String attribute, TriggerOn trigger, TestPhase phase) {
         return Common.getField(fields, attribute, trigger, phase);
     }
 

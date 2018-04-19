@@ -13,6 +13,11 @@ public final class TestNgContext {
     private static final InheritableThreadLocal<ITestClass>     iTestClass     = new InheritableThreadLocal<ITestClass>();
     private static final InheritableThreadLocal<IInvokedMethod> iInvokedMethod = new InheritableThreadLocal<IInvokedMethod>();
     private static final InheritableThreadLocal<ParallelMode>   parallelMode   = new InheritableThreadLocal<ParallelMode>();
+    private static final InheritableThreadLocal<Boolean>        useWebDriver   = new InheritableThreadLocal<Boolean>();
+
+    TestNgContext() {
+        useWebDriver.set(true);
+    }
 
     public ISuite getISuite() {
         return iSuite.get();
@@ -21,6 +26,17 @@ public final class TestNgContext {
     void setISuite(ISuite iSuite) {
         /* allow set to null */
         TestNgContext.iSuite.set(iSuite);
+    }
+
+    public boolean isUseWebDriver() {
+        return useWebDriver.get();
+    }
+
+    void setUseWebDriver(String use) {
+        if (use == null || use.isEmpty())
+            useWebDriver.set(true);
+        else
+            useWebDriver.set(Boolean.getBoolean(use));
     }
 
     public ParallelMode getParallelMode() {

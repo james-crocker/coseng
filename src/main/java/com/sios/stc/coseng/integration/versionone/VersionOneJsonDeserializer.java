@@ -8,7 +8,7 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import com.sios.stc.coseng.Triggers.Phase;
+import com.sios.stc.coseng.Triggers.TestPhase;
 import com.sios.stc.coseng.Triggers.TriggerOn;
 import com.sios.stc.coseng.integration.IIntegratorGsonDeserializer;
 
@@ -30,13 +30,13 @@ public final class VersionOneJsonDeserializer implements IIntegratorGsonDeserial
         };
         deserializers.put(TriggerOn.class, triggerOnTypeDeserializer);
 
-        JsonDeserializer<Phase> phaseTypeDeserializer = new JsonDeserializer<Phase>() {
-            public Phase deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+        JsonDeserializer<TestPhase> phaseTypeDeserializer = new JsonDeserializer<TestPhase>() {
+            public TestPhase deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
                     throws JsonParseException {
-                return Phase.valueOf(json.getAsString().toUpperCase());
+                return TestPhase.valueOf(json.getAsString().toUpperCase());
             }
         };
-        deserializers.put(Phase.class, phaseTypeDeserializer);
+        deserializers.put(TestPhase.class, phaseTypeDeserializer);
 
         return deserializers;
     }

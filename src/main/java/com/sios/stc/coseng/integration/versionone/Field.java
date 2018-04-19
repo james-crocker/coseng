@@ -19,7 +19,7 @@ package com.sios.stc.coseng.integration.versionone;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import com.google.gson.annotations.Expose;
-import com.sios.stc.coseng.Triggers.Phase;
+import com.sios.stc.coseng.Triggers.TestPhase;
 import com.sios.stc.coseng.Triggers.TriggerOn;
 
 /**
@@ -39,9 +39,9 @@ public final class Field {
     @Expose
     private TriggerOn triggerOn = null;
     @Expose
-    private Phase     phase     = null;
+    private TestPhase phase     = null;
 
-    Field(String attribute, String name, String value, TriggerOn triggerOn, Phase phase) {
+    Field(String attribute, String name, String value, TriggerOn triggerOn, TestPhase phase) {
         this.attribute = attribute;
         this.name = name;
         this.value = value;
@@ -92,7 +92,7 @@ public final class Field {
         return triggerOn;
     }
 
-    Phase getPhase() {
+    TestPhase getTestPhase() {
         return phase;
     }
 

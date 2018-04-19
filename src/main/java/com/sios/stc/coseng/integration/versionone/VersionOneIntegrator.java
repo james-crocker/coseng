@@ -35,7 +35,7 @@ import org.testng.IInvokedMethod;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.sios.stc.coseng.Triggers.Phase;
+import com.sios.stc.coseng.Triggers.TestPhase;
 import com.sios.stc.coseng.Triggers.TriggerOn;
 import com.sios.stc.coseng.integration.Integrator;
 import com.sios.stc.coseng.integration.versionone.Common.Separator;
@@ -78,7 +78,7 @@ public final class VersionOneIntegrator extends Integrator {
     private IAssetType  iBacklog   = null;
     private IAssetType  iTest      = null;
 
-    private boolean hasUpdatedBacklog = false;
+    private boolean hasUpdatedBacklogDescription = false;
 
     public VersionOneIntegrator() {
         // do nothing; for allowing access for newInstance() in TestNg
@@ -129,7 +129,7 @@ public final class VersionOneIntegrator extends Integrator {
     }
 
     @Override
-    public void actOn(TriggerOn trigger, Phase phase) {
+    public void actOn(TriggerOn trigger, TestPhase phase) {
         if (trigger == null || phase == null)
             return;
         switch (phase) {
@@ -218,7 +218,7 @@ public final class VersionOneIntegrator extends Integrator {
     private void onExecutionStart() {
         try {
             TriggerOn trigger = TriggerOn.TESTNGEXECUTION;
-            Phase phase = Phase.START;
+            TestPhase phase = TestPhase.START;
             log.debug("TriggerOn [{}], phase [{}], thread [{}], test [{}], testHashCode [{}]", trigger, phase,
                     Thread.currentThread().getId(), test.getId(), test.hashCode());
 
@@ -242,7 +242,7 @@ public final class VersionOneIntegrator extends Integrator {
     private void onExecutionFinish() {
         try {
             TriggerOn trigger = TriggerOn.TESTNGEXECUTION;
-            Phase phase = Phase.FINISH;
+            TestPhase phase = TestPhase.FINISH;
             log.debug("TriggerOn [{}], phase [{}], thread [{}], test [{}], testHashCode [{}]", trigger, phase,
                     Thread.currentThread().getId(), test.getId(), test.hashCode());
             attachOutput();
@@ -254,7 +254,7 @@ public final class VersionOneIntegrator extends Integrator {
     private void onCosengFinish() {
         try {
             TriggerOn trigger = TriggerOn.COSENG;
-            Phase phase = Phase.FINISH;
+            TestPhase phase = TestPhase.FINISH;
             log.debug("TriggerOn [{}], phase [{}], thread [{}], test [{}], testHashCode [{}]", trigger, phase,
                     Thread.currentThread().getId(), test.getId(), test.hashCode());
 
@@ -275,10 +275,10 @@ public final class VersionOneIntegrator extends Integrator {
             List<Field> fields = v1.getBacklog().getFields(trigger, phase);
             if (test.isFailed()) {
                 log.debug("all testing [{}] has failures", test.getId());
-                fields.addAll(v1.getBacklog().getFields(trigger, Phase.FAIL));
+                fields.addAll(v1.getBacklog().getFields(trigger, TestPhase.FAIL));
             } else {
                 log.debug("all testing [{}] passed", test.getId());
-                fields.addAll(v1.getBacklog().getFields(trigger, Phase.PASS));
+                fields.addAll(v1.getBacklog().getFields(trigger, TestPhase.PASS));
             }
 
             /*
@@ -296,29 +296,33 @@ public final class VersionOneIntegrator extends Integrator {
     private void onMethodStart() {
         try {
             TriggerOn trigger = TriggerOn.TESTNGMETHOD;
-            Phase phase = Phase.START;
+            TestPhase phase = TestPhase.START;
             IInvokedMethod method = test.getTestNg().getContext().getIInvokedMethod();
+
             log.debug(
                     "TriggerOn [{}], phase [{}], thread [{}], test [{}], testHashCode [{}], method [{}], methodHashCode [{}]",
                     trigger, phase, Thread.currentThread().getId(), test.getId(), test.hashCode(),
                     method.getTestMethod().getQualifiedName(), method.hashCode());
 
             MethodTest methodTest = new MethodTest();
-
-            String browserVersion = Stringer
-                    .wrapBracket(test.getSelenium().getWebDriverContext().getWebDrivers().getPlatform() + ", "
-                            + test.getSelenium().getWebDriverContext().getWebDrivers().getBrowserName()
-                            + StringUtils.EMPTY + Stringer.wrapParentheses(
-                                    test.getSelenium().getWebDriverContext().getWebDrivers().getBrowserVersion()));
-
-            /* Update the setup. */
+            String browserVersion = null;
             List<String> webDriverDetails = new ArrayList<String>();
-            webDriverDetails.add(Stringer.htmlBold("Web driver browser: ") + Stringer.htmlItalic(browserVersion));
-            Map<String, ?> webDriverCapabilities = test.getSelenium().getWebDriverContext().getWebDrivers()
-                    .getWebDriverCapabilities();
-            if (webDriverCapabilities != null) {
-                webDriverDetails.add(
-                        Stringer.htmlBold("Web driver capabilities: ") + Stringer.htmlItalic(webDriverCapabilities));
+
+            /* Not all tests may start a web driver; see useWebDriver in TestNgContext. */
+            if (test.getSelenium().getWebDriverContext().getWebDrivers().hasWebDriverCollection()) {
+                browserVersion = Stringer
+                        .wrapBracket(test.getSelenium().getWebDriverContext().getWebDrivers().getPlatform() + ", "
+                                + test.getSelenium().getWebDriverContext().getWebDrivers().getBrowserName()
+                                + StringUtils.EMPTY + Stringer.wrapParentheses(
+                                        test.getSelenium().getWebDriverContext().getWebDrivers().getBrowserVersion()));
+
+                webDriverDetails.add(Stringer.htmlBold("Web driver browser: ") + Stringer.htmlItalic(browserVersion));
+                Map<String, ?> webDriverCapabilities = test.getSelenium().getWebDriverContext().getWebDrivers()
+                        .getWebDriverCapabilities();
+                if (webDriverCapabilities != null) {
+                    webDriverDetails.add(Stringer.htmlBold("Web driver capabilities: ")
+                            + Stringer.htmlItalic(webDriverCapabilities));
+                }
             }
 
             /*
@@ -326,7 +330,7 @@ public final class VersionOneIntegrator extends Integrator {
              * Synchronize to avoid threads from duplicating fields.
              */
             synchronized (this) {
-                if (!hasUpdatedBacklog) {
+                if (!hasUpdatedBacklogDescription && browserVersion != null) {
 
                     v1.getBacklog().setName(v1.getBacklog().getName() + StringUtils.SPACE + browserVersion);
 
@@ -340,22 +344,25 @@ public final class VersionOneIntegrator extends Integrator {
                     setFields(iBacklog, backlog, v1.getBacklog().getFields(trigger, phase));
                     iServices.save(backlog);
 
-                    hasUpdatedBacklog = true;
+                    hasUpdatedBacklogDescription = true;
                 }
             }
 
-            /* Update the setup. */
-            methodTest.setSetup(StringUtils.join(webDriverDetails, Stringer.Html.LINE_BREAK.get()));
+            /* Populate the setup. */
+            if (!webDriverDetails.isEmpty())
+                methodTest.setSetup(StringUtils.join(webDriverDetails, Stringer.Html.LINE_BREAK.get()));
 
-            /* Set the Test asset w/ test details */
+            /* Set the Test asset w/ test details. */
             String suiteName = test.getTestNg().getContext().getISuite().getName();
             String testName = test.getTestNg().getContext().getITestContext().getName();
             String className = test.getTestNg().getContext().getITestClass().getName();
-            String methodName = method.getTestMethod().getQualifiedName();
+            String methodName = method.getTestMethod().getMethodName();
             String description = method.getTestMethod().getDescription();
 
-            methodTest.setName((description != null && !description.isEmpty() ? description : StringUtils.EMPTY)
-                    + Separator.NAME.get() + suiteName + Separator.NAME.get() + methodName);
+            /* Set test name. */
+            methodTest.setName(suiteName + Separator.NAME.get() + methodName
+                    + (description != null && !description.isEmpty() ? Separator.NAME.get() + description
+                            : StringUtils.EMPTY));
 
             List<String> descriptions = new ArrayList<String>();
             descriptions.add(Stringer.htmlBold("Suite: ") + Stringer.htmlItalic(suiteName));
@@ -392,7 +399,7 @@ public final class VersionOneIntegrator extends Integrator {
     private void onMethodFinish() {
         try {
             TriggerOn trigger = TriggerOn.TESTNGMETHOD;
-            Phase phase = Phase.FINISH;
+            TestPhase phase = TestPhase.FINISH;
             IInvokedMethod method = test.getTestNg().getContext().getIInvokedMethod();
             com.versionone.Oid testOid = v1.getMethodTest(method).getOid();
             log.debug(
@@ -404,10 +411,10 @@ public final class VersionOneIntegrator extends Integrator {
             List<Field> fields = v1.getMethodTest(method).getFields(trigger, phase);
             if (method.getTestResult().isSuccess()) {
                 log.debug("Test [{}] method [{}] passed", test.getId(), method.getTestMethod().getMethodName());
-                fields.addAll(v1.getMethodTest(method).getFields(trigger, Phase.PASS));
+                fields.addAll(v1.getMethodTest(method).getFields(trigger, TestPhase.PASS));
             } else {
                 log.debug("Test [{}] method [{}] failed", test.getId(), method.getTestMethod().getMethodName());
-                fields.addAll(v1.getMethodTest(method).getFields(trigger, Phase.FAIL));
+                fields.addAll(v1.getMethodTest(method).getFields(trigger, TestPhase.FAIL));
             }
 
             /* Synchronize to avoid threads from duplicating fields. */
@@ -533,7 +540,7 @@ public final class VersionOneIntegrator extends Integrator {
         return StringUtils.join(testParams, Stringer.Html.LINE_BREAK.get());
     }
 
-    private List<Field> getTestParamFields(TriggerOn trigger, Phase phase) {
+    private List<Field> getTestParamFields(TriggerOn trigger, TestPhase phase) {
         List<Field> fields = new ArrayList<Field>();
         try {
             Map<String, String> testParams = getTestNgParameters();
@@ -551,16 +558,16 @@ public final class VersionOneIntegrator extends Integrator {
 
     private boolean hasRequiredFields() {
         try {
-            Field field = v1.getBacklog().getField(V1Attr.STATUS.get(), TriggerOn.TESTNGEXECUTION, Phase.START);
+            Field field = v1.getBacklog().getField(V1Attr.STATUS.get(), TriggerOn.TESTNGEXECUTION, TestPhase.START);
             if (!hasValidField(field))
                 return false;
-            field = v1.getTest().getField(V1Attr.STATUS.get(), TriggerOn.TESTNGMETHOD, Phase.START);
+            field = v1.getTest().getField(V1Attr.STATUS.get(), TriggerOn.TESTNGMETHOD, TestPhase.START);
             if (!hasValidField(field))
                 return false;
-            field = v1.getTest().getField(V1Attr.STATUS.get(), TriggerOn.TESTNGMETHOD, Phase.PASS);
+            field = v1.getTest().getField(V1Attr.STATUS.get(), TriggerOn.TESTNGMETHOD, TestPhase.PASS);
             if (!hasValidField(field))
                 return false;
-            field = v1.getTest().getField(V1Attr.STATUS.get(), TriggerOn.TESTNGMETHOD, Phase.FAIL);
+            field = v1.getTest().getField(V1Attr.STATUS.get(), TriggerOn.TESTNGMETHOD, TestPhase.FAIL);
             if (!hasValidField(field))
                 return false;
             return true;

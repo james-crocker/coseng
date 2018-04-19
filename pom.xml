@@ -9,6 +9,8 @@
     <coseng.version>3.0</coseng.version>
     <!-- 20170426 Disable Maven 'Download JavaDoc' 3.4.0 selenium-java-javadoc has errors; https://github.com/SeleniumHQ/selenium/issues/3895 -->
     <selenium.version>3.11.0</selenium.version>
+    <selenium-fluent.version>1.19</selenium-fluent.version>
+    <hamcrest.version>1.3</hamcrest.version>
     <testng.version>6.14.2</testng.version>
     <!-- NGWebDriver 1.0 is available; but breaks -->
     <ngwebdriver.version>1.0</ngwebdriver.version>
@@ -38,6 +40,17 @@
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-java</artifactId>
       <version>${selenium.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.seleniumhq.selenium.fluent</groupId>
+      <artifactId>fluent-selenium</artifactId>
+      <version>${selenium-fluent.version}</version>
+    </dependency>
+    <!-- Hamcrest for Selenium-Fluent -->
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-all</artifactId>
+      <version>${hamcrest.version}</version>
     </dependency>
     <!-- AngularJS/Selenium/Java WebDriver -->
     <dependency>

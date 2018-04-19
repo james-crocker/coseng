@@ -1,8 +1,0 @@
-{
-    "acceptInsecureCerts": true,
-    "browserName": "firefox",
-    "moz:firefoxOptions": {
-        "args": [],
-        "prefs": {}
-    }
-}

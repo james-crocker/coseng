@@ -7,6 +7,7 @@ import org.openqa.selenium.Platform;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.seleniumhq.selenium.fluent.FluentWebDriver;
 
 import com.paulhammant.ngwebdriver.NgWebDriver;
 
@@ -16,7 +17,7 @@ public final class WebDrivers {
      * https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/
      * ConcurrentHashMap.html
      */
-    private static final InheritableThreadLocal<WebDriverCollection> webDriverCollection = new InheritableThreadLocal<WebDriverCollection>();
+    private static final ThreadLocal<WebDriverCollection> webDriverCollection = new ThreadLocal<WebDriverCollection>();
 
     public String getBrowserName() {
         return getCollection().getBrowserName();
@@ -54,8 +55,22 @@ public final class WebDrivers {
         return getCollection().getNgWebDriver();
     }
 
+    public FluentWebDriver getFluentWebDriver() {
+        return getCollection().getFluentWebDriver();
+    }
+
+    public boolean hasWebDriverCollection() {
+        if (webDriverCollection.get() != null)
+            return true;
+        return false;
+    }
+
     void setWebDriverCollection(RemoteWebDriver remoteWebDriver, long waitTimeout, long waitSleep) {
         webDriverCollection.set(new WebDriverCollection(remoteWebDriver, waitTimeout, waitSleep));
+    }
+
+    void removeWebDriverCollection() {
+        webDriverCollection.remove();
     }
 
     private WebDriverCollection getCollection() {

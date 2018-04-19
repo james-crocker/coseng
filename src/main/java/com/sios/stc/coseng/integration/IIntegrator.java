@@ -18,7 +18,7 @@ package com.sios.stc.coseng.integration;
 
 import java.net.URI;
 
-import com.sios.stc.coseng.Triggers.Phase;
+import com.sios.stc.coseng.Triggers.TestPhase;
 import com.sios.stc.coseng.Triggers.TriggerOn;
 import com.sios.stc.coseng.run.Test;
 
@@ -30,14 +30,14 @@ import com.sios.stc.coseng.run.Test;
  */
 public interface IIntegrator {
 
-    abstract public void validateAndPrepare(Test test, URI configResource);
+    public void validateAndPrepare(Test test, URI configResource);
 
-    abstract public void actOn(TriggerOn trigger, Phase phase);
+    public void actOn(TriggerOn trigger, TestPhase phase);
 
-    abstract public void addTestStep(String stepMessage);
+    public void addTestStep(String stepMessage);
 
-    abstract public void addTestStepExpectedResult(String stepMessage, String expetedResult);
+    public void addTestStepExpectedResult(String stepMessage, String expetedResult);
 
-    abstract public void addTestStepActualResult(String stepMessage, String actualResult);
+    public void addTestStepActualResult(String stepMessage, String actualResult);
 
 }

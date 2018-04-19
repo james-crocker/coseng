@@ -1,7 +1,9 @@
-package com.sios.stc.coseng.runnner;
+package com.sios.stc.coseng.aut;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -56,7 +58,9 @@ public final class Window {
                         UriUtil.getAbsolute(filename + Stringer.FilenameExtension.PNG.get())));
                 FileUtils.copyFile(screenshotIn, screenshotOut);
             }
-        } catch (Exception e) {
+        } catch (IllegalStateException ignore) {
+            // webDriver not set or used; ignore
+        } catch (URISyntaxException | IOException e) {
             throw new RuntimeException("Unable to save screenshot", e);
         }
     }

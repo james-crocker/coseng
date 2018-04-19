@@ -32,15 +32,15 @@ import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestNGListener;
 import org.testng.ITestResult;
+import org.testng.SkipException;
 import org.testng.xml.XmlSuite;
 import org.testng.xml.XmlSuite.ParallelMode;
 
 import com.sios.stc.coseng.Triggers;
-import com.sios.stc.coseng.Triggers.Phase;
+import com.sios.stc.coseng.Triggers.TestPhase;
 import com.sios.stc.coseng.Triggers.TriggerOn;
 import com.sios.stc.coseng.integration.IIntegratorListener;
 import com.sios.stc.coseng.integration.Integrator;
-import com.sios.stc.coseng.run.SeleniumBrowser.Browser;
 import com.sios.stc.coseng.util.Stringer;
 
 /**
@@ -105,9 +105,11 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
 
     private static final Logger log = LogManager.getLogger(TestNgListener.class);
 
-    private static final ThreadLocal<Test> staticTest     = new ThreadLocal<Test>();
-    private Test                           test           = null;
-    private boolean                        isOneWebDriver = false;
+    private static final String            SUITE_PARAM_WEBDRIVER = "useWebDriver";
+    private static final ThreadLocal<Test> staticTest            = new ThreadLocal<Test>();
+    private Test                           test                  = null;
+    private boolean                        isOneWebDriver        = false;
+    private Boolean                        hasAnyFailure         = null;
 
     /*-
      * General Behaviors
@@ -157,7 +159,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
 
     TestNgListener(Test test) {
         if (test == null)
-            throw new IllegalArgumentException("Instantiation requires a non null test");
+            throw new IllegalArgumentException("A test must be provided");
 
         log.debug("TestNgListener constructor thread [{}]", Thread.currentThread());
         isOneWebDriver = test.getSelenium().getWebDriverContext().isOneWebDriver();
@@ -167,6 +169,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
 
     public static Test getTest() {
         /* !Guarantee test not null! */
+
         return staticTest.get();
     }
 
@@ -179,7 +182,11 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
     @Override
     public void onExecutionStart() {
         TriggerOn trigger = TriggerOn.TESTNGEXECUTION;
-        Phase phase = Phase.START;
+        TestPhase phase = TestPhase.START;
+        /*
+         * !! ALL IMPORTANT; sets up the AUT, web driver context and other contexts. !!
+         */
+        new com.sios.stc.coseng.aut.CosengTest();
         logDebug(trigger, phase);
         /*
          * 2018-04-03 ChromeDriver and IEDriverServer are know to be able to launch
@@ -187,19 +194,14 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
          * SeleniumWebDriver.startWebDriver(), SeleniumWebDriver.startDriverService()
          * and this.onExecutionFinish())
          */
-        Browser browser = test.getSelenium().getBrowser().getType();
-        if (Browser.CHROME.equals(browser) || Browser.IE.equals(browser)) {
-            DriverServices service = test.getSelenium().getWebDriverContext().getDriverServices();
-            try {
-                service.start();
-                String serviceName = service.get().getClass().getName();
-                log.debug("Started web driver service {}", Stringer.wrapBracket(serviceName));
-                if (!service.isRunning())
-                    throw new IllegalStateException(
-                            "Could not start web driver service " + Stringer.wrapBracket(serviceName));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        DriverServices services = test.getSelenium().getWebDriverContext().getDriverServices();
+        if (services != null && services.isConcurrentCapable()) {
+            services.start();
+            String serviceName = services.get().getClass().getName();
+            log.debug("Started web driver service {}", Stringer.wrapBracket(serviceName));
+            if (!services.isRunning())
+                throw new IllegalStateException(
+                        "Could not start web driver service " + Stringer.wrapBracket(serviceName));
         }
         if (isOneWebDriver)
             webDriverAction(WebDriverAction.START);
@@ -214,19 +216,19 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
     @Override
     public void onExecutionFinish() {
         TriggerOn trigger = TriggerOn.TESTNGEXECUTION;
-        Phase phase = Phase.FINISH;
+        TestPhase phase = TestPhase.FINISH;
         logDebug(trigger, phase);
         if (test.getCoseng().getUri().isEnableFind())
             test.getCoseng().getUri().getUriFound().saveAll();
         if (isOneWebDriver)
             webDriverAction(WebDriverAction.STOP);
-        Browser browser = test.getSelenium().getBrowser().getType();
-        if (Browser.CHROME.equals(browser) || Browser.IE.equals(browser)) {
-            DriverServices service = test.getSelenium().getWebDriverContext().getDriverServices();
-            service.stop();
-            log.debug("Stopped web driver service {}", Stringer.wrapBracket(service.get().getClass().getName()));
+        DriverServices services = test.getSelenium().getWebDriverContext().getDriverServices();
+        if (services != null && services.isConcurrentCapable()) {
+            services.stop();
+            log.debug("Stopped web driver service {}", Stringer.wrapBracket(services.get().getClass().getName()));
         }
         notifyIntegrators(trigger, phase);
+        test.getSelenium().getWebDriverContext().getWebDrivers().removeWebDriverCollection();
     }
     /* </IExecutionListener> */
 
@@ -238,10 +240,11 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
      */
     @Override
     public void onStart(ISuite arg0) {
+        test.getTestNg().getContext().setUseWebDriver(arg0.getParameter(SUITE_PARAM_WEBDRIVER));
         test.getTestNg().getContext().setParallelMode(arg0.getXmlSuite().getParallel());
         test.getTestNg().getContext().setISuite(arg0);
         TriggerOn trigger = TriggerOn.TESTNGSUITE;
-        Phase phase = Phase.START;
+        TestPhase phase = TestPhase.START;
         logDebug(trigger, phase);
         notifyIntegrators(trigger, phase);
     }
@@ -259,7 +262,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
          * driver should be started/stopped on the suite trigger.
          */
         TriggerOn trigger = TriggerOn.TESTNGSUITE;
-        Phase phase = Phase.FINISH;
+        TestPhase phase = TestPhase.FINISH;
         logDebug(trigger, phase);
         /*-
          * TODO
@@ -268,6 +271,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
          * IInvokedMethod m : arg0.getAllInvokedMethods()
          */
         notifyIntegrators(trigger, phase);
+        test.getTestNg().getContext().setISuite(null);
     }
     /* </ISuiteListener> */
 
@@ -281,7 +285,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
     public void onStart(ITestContext arg0) {
         test.getTestNg().getContext().setITestContext(arg0);
         TriggerOn trigger = TriggerOn.TESTNGTEST;
-        Phase phase = Phase.START;
+        TestPhase phase = TestPhase.START;
         logDebug(trigger, phase);
         ParallelMode mode = test.getTestNg().getContext().getParallelMode();
         if (!isOneWebDriver && Triggers.isTrigger(mode, trigger))
@@ -348,12 +352,13 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
     @Override
     public void onFinish(ITestContext arg0) {
         TriggerOn trigger = TriggerOn.TESTNGTEST;
-        Phase phase = Phase.FINISH;
+        TestPhase phase = TestPhase.FINISH;
         logDebug(trigger, phase);
         ParallelMode mode = test.getTestNg().getContext().getParallelMode();
         if (!isOneWebDriver && Triggers.isTrigger(mode, trigger))
             webDriverAction(WebDriverAction.STOP);
         notifyIntegrators(trigger, phase);
+        test.getTestNg().getContext().setITestContext(null);
     }
     /* </ITestListener> */
 
@@ -367,7 +372,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
     public void onBeforeClass(ITestClass arg0) {
         test.getTestNg().getContext().setITestClass(arg0);
         TriggerOn trigger = TriggerOn.TESTNGCLASS;
-        Phase phase = Phase.START;
+        TestPhase phase = TestPhase.START;
         logDebug(trigger, phase);
         ParallelMode mode = test.getTestNg().getContext().getParallelMode();
         if (!isOneWebDriver && Triggers.isTrigger(mode, trigger))
@@ -383,12 +388,13 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
     @Override
     public void onAfterClass(ITestClass arg0) {
         TriggerOn trigger = TriggerOn.TESTNGCLASS;
-        Phase phase = Phase.FINISH;
+        TestPhase phase = TestPhase.FINISH;
         logDebug(trigger, phase);
         ParallelMode mode = test.getTestNg().getContext().getParallelMode();
         if (!isOneWebDriver && Triggers.isTrigger(mode, trigger))
             webDriverAction(WebDriverAction.STOP);
         notifyIntegrators(trigger, phase);
+        test.getTestNg().getContext().setITestClass(null);
     }
     /* </IClassListener> */
 
@@ -427,7 +433,14 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
      */
     @Override
     public void beforeInvocation(IInvokedMethod method, ITestResult testResult, ITestContext context) {
+        if (!continueOnFailure())
+            throw new SkipException("Skipping test due to prior failure and isSkipRemainingTestsOnFailure "
+                    + Stringer.wrapBracket(test.getTestNg().isSkipRemainingTestsOnFailure()));
         /*
+         * TODO Comment on SuiteXml with parallel=methods and tests with the same
+         * classes - ONLY one class instantiation.
+         * 
+         * 
          * For parallel="methods" and multiple methods from the same class; first method
          * gets class start, second does not.
          */
@@ -437,7 +450,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
         }
         test.getTestNg().getContext().setIInvokedMethod(method);
         TriggerOn trigger = TriggerOn.TESTNGMETHOD;
-        Phase phase = Phase.START;
+        TestPhase phase = TestPhase.START;
         logDebug(trigger, phase);
         ParallelMode mode = test.getTestNg().getContext().getParallelMode();
         if (!isOneWebDriver && Triggers.isTrigger(mode, trigger))
@@ -454,7 +467,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
     @Override
     public void afterInvocation(IInvokedMethod method, ITestResult testResult, ITestContext context) {
         TriggerOn trigger = TriggerOn.TESTNGMETHOD;
-        Phase phase = Phase.FINISH;
+        TestPhase phase = TestPhase.FINISH;
         logDebug(trigger, phase);
         if (test.getCoseng().getUri().isEnableFind())
             test.getCoseng().getUri().getUriFound().saveMethod();
@@ -462,6 +475,9 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
         if (!isOneWebDriver && Triggers.isTrigger(mode, trigger))
             webDriverAction(WebDriverAction.STOP);
         notifyIntegrators(trigger, phase);
+        if (!testResult.isSuccess() && hasAnyFailure == null)
+            hasAnyFailure = true;
+        test.getTestNg().getContext().setIInvokedMethod(null);
     }
     /* </IMethodListener2> */
 
@@ -483,7 +499,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
      * stc.coseng.integration.Integrator.TriggerOn)
      */
     @Override
-    public void notifyIntegrators(TriggerOn trigger, Phase phase) {
+    public void notifyIntegrators(TriggerOn trigger, TestPhase phase) {
         for (Integrator i : test.getTestNg().getIntegrators()) {
             i.actOn(trigger, phase);
         }
@@ -491,13 +507,22 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
 
     private void webDriverAction(WebDriverAction action) {
         log.debug("Web driver action [{}], thread [{}]", action, Thread.currentThread().getId());
-        if (WebDriverAction.START.equals(action))
-            test.getSelenium().getWebDriverContext().startWebDriver();
-        else if (WebDriverAction.STOP.equals(action))
-            test.getSelenium().getWebDriverContext().stopWebDriver();
+        if (test.getTestNg().getContext().isUseWebDriver()) {
+            if (WebDriverAction.START.equals(action) && continueOnFailure())
+                test.getSelenium().getWebDriverContext().startWebDriver();
+            else if (WebDriverAction.STOP.equals(action))
+                test.getSelenium().getWebDriverContext().stopWebDriver();
+        }
     }
 
-    private void logDebug(TriggerOn trigger, Phase phase) {
+    private boolean continueOnFailure() {
+        boolean skip = test.getTestNg().isSkipRemainingTestsOnFailure();
+        if (hasAnyFailure != null && skip && hasAnyFailure)
+            return false;
+        return true;
+    }
+
+    private void logDebug(TriggerOn trigger, TestPhase phase) {
         TestNgContext context = test.getTestNg().getContext();
         log.debug(
                 "TriggerOn [{}] phase [{}]; test [{}], thread [{}], parallelMode [{}], suite [{}], test [{}], class [{}], method [{}], startWebDrivers [{}], stopWebDrivers [{}], isOneWebDriver [{}]",

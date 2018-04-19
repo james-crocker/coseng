@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.testng.ITestNGListener;
 import org.testng.TestNG;
 
-import com.sios.stc.coseng.Triggers.Phase;
+import com.sios.stc.coseng.Triggers.TestPhase;
 import com.sios.stc.coseng.Triggers.TriggerOn;
 import com.sios.stc.coseng.integration.Integrator;
 import com.sios.stc.coseng.util.Stringer;
@@ -88,7 +88,7 @@ public final class RunnableTest implements Runnable {
             }
             /* Notify integrators of final results */
             for (Integrator i : test.getTestNg().getIntegrators()) {
-                i.actOn(TriggerOn.COSENG, Phase.FINISH);
+                i.actOn(TriggerOn.COSENG, TestPhase.FINISH);
             }
             Level logLevel = Level.INFO;
             if (test.isFailed())

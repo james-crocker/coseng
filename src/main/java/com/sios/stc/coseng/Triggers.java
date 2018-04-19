@@ -4,7 +4,7 @@ import org.testng.xml.XmlSuite.ParallelMode;
 
 public final class Triggers {
 
-    public enum Phase {
+    public enum TestPhase {
         START, FINISH, PASS, FAIL;
     }
 

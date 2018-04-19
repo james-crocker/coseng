@@ -34,13 +34,15 @@ import com.sios.stc.coseng.util.UriUtil;
 public final class TestNg {
 
     @Expose
-    private URI      suiteXml        = null;
+    private URI      suiteXml                    = null;
     @Expose
-    private URI      outputDirectory = null;
+    private URI      outputDirectory             = null;
     @Expose
-    private Set<URI> integratorsJson = null;
+    private Boolean  skipRemainingTestsOnFailure = null;
     @Expose
-    private Integer  verbosity       = null;
+    private Set<URI> integratorsJson             = null;
+    @Expose
+    private Integer  verbosity                   = null;
 
     private Directory            directory   = null;
     private List<Integrator>     integrators = new ArrayList<Integrator>();
@@ -75,6 +77,14 @@ public final class TestNg {
         return directory;
     }
 
+    public boolean isSkipRemainingTestsOnFailure() {
+        return skipRemainingTestsOnFailure.booleanValue();
+    }
+
+    public void setSkipRemainingTestsOnFailure(boolean skipTests) {
+        skipRemainingTestsOnFailure = skipTests;
+    }
+
     public TestNgContext getContext() {
         return context;
     }
@@ -106,6 +116,8 @@ public final class TestNg {
 
             xmlSuite.setSuiteFiles(suiteXmls);
             xmlSuites.add(xmlSuite);
+            if (skipRemainingTestsOnFailure == null)
+                skipRemainingTestsOnFailure = false;
             /* Verbosity */
             if (verbosity == null)
                 verbosity = 0;

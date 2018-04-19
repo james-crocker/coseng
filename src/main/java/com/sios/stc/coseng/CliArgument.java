@@ -40,14 +40,14 @@ public final class CliArgument {
         URI testsJsonResourceUri = null;
         HelpFormatter formatter = new HelpFormatter();
         String optHelp = "help";
-        String optTests = "tests";
+        String optTest = "test";
         String optDemo = "demo";
         String helpUsage = "Valid COSENG command line options. -demo and -tests are mutually exclusive.";
         /* Define the accepted command line options */
         Options options = new Options();
         options.addOption(optDemo, "Run COSENG demonstration");
         options.addOption(optHelp, false, "Help");
-        options.addOption(optTests, true, "Tests JSON configuration resource URI");
+        options.addOption(optTest, true, "Tests JSON configuration resource URI");
         try {
             /*
              * Attempt to parse the command line arguments with the expected options
@@ -60,19 +60,19 @@ public final class CliArgument {
             if (cli.hasOption(optHelp)) {
                 formatter.printHelp(helpUsage, options);
             } else {
-                if (cli.hasOption(optTests)) {
+                if (cli.hasOption(optTest)) {
                     if (cli.hasOption(optDemo)) {
-                        System.out.println("-" + optTests + " or -" + optDemo + "; not both");
+                        System.out.println("-" + optTest + " or -" + optDemo + "; not both");
                         System.exit(ExitStatus.FAILURE.getStatus());
-                    } else if ((cli.getOptionValue(optTests)).isEmpty()) {
-                        System.out.println("-" + optTests + " <arg> empty");
+                    } else if ((cli.getOptionValue(optTest)).isEmpty()) {
+                        System.out.println("-" + optTest + " <arg> empty");
                         System.exit(ExitStatus.FAILURE.getStatus());
                     }
-                    testsJsonResourceUri = new URI(cli.getOptionValue(optTests));
+                    testsJsonResourceUri = new URI(cli.getOptionValue(optTest));
                 } else if (cli.hasOption(optDemo)) {
                     testsJsonResourceUri = testsDemoJsonResourceUri;
                 } else {
-                    System.out.println("-" + optTests + " <arg> required");
+                    System.out.println("-" + optTest + " <arg> required");
                     System.exit(ExitStatus.FAILURE.getStatus());
                 }
             }

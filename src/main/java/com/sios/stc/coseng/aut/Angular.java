@@ -1,4 +1,4 @@
-package com.sios.stc.coseng.runnner;
+package com.sios.stc.coseng.aut;
 
 import com.paulhammant.ngwebdriver.NgWebDriver;
 import com.sios.stc.coseng.run.Test;

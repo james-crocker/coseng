@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.sios.stc.coseng.runnner;
+package com.sios.stc.coseng.aut;
 
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.internal.WrapsDriver;
 
 import com.sios.stc.coseng.run.Test;
 import com.sios.stc.coseng.run.TestNgListener;
@@ -36,31 +35,48 @@ import com.sios.stc.coseng.run.WebDrivers;
  * @since 2.0
  * @version.coseng
  */
-public class Coseng implements WrapsDriver {
+public final class CosengTest {
 
-    protected final Test    cosengTest    = TestNgListener.getTest();
-    protected final Angular cosengAngular = new Angular(cosengTest);
-    protected final Window  cosengWindow  = new Window(cosengTest);
-    protected final Log     cosengLog     = new Log(cosengTest, cosengWindow);
-    protected final Uri     cosengUri     = new Uri(cosengTest, cosengLog, cosengAngular);
+    private static final InheritableThreadLocal<Test>    test    = new InheritableThreadLocal<Test>();
+    private static final InheritableThreadLocal<Angular> angular = new InheritableThreadLocal<Angular>();
+    private static final InheritableThreadLocal<Window>  window  = new InheritableThreadLocal<Window>();
+    private static final InheritableThreadLocal<Log>     log     = new InheritableThreadLocal<Log>();
+    private static final InheritableThreadLocal<Uri>     uri     = new InheritableThreadLocal<Uri>();
 
-    // public static WebDrivers webDrivers() {
-    // return
-    // TestNgListener.getTest().getSelenium().getWebDriverContext().getWebDrivers();
-    // }
-
-    public WebDrivers getWebDrivers() {
-        return cosengTest.getSelenium().getWebDriverContext().getWebDrivers();
+    public CosengTest() {
+        test.set(TestNgListener.getTest());
+        angular.set(new Angular(test.get()));
+        window.set(new Window(test.get()));
+        log.set(new Log(test.get(), window.get()));
+        uri.set(new Uri(test.get(), log.get(), angular.get()));
     }
 
-    @Override
-    public WebDriver getWrappedDriver() {
-        return cosengTest.getSelenium().getWebDriverContext().getWebDrivers().getWebDriver();
+    public static Test getTest() {
+        return test.get();
     }
 
-    // public static WebDriver getWebDriver() {
-    // return
-    // TestNgListener.getTest().getSelenium().getWebDriverContext().getWebDrivers().getWebDriver();
-    // }
+    public static Angular getAngular() {
+        return angular.get();
+    }
+
+    public static Window getWindow() {
+        return window.get();
+    }
+
+    public static Log getLog() {
+        return log.get();
+    }
+
+    public static Uri getUri() {
+        return uri.get();
+    }
+
+    public static WebDrivers getWebDrivers() {
+        return test.get().getSelenium().getWebDriverContext().getWebDrivers();
+    }
+
+    public static WebDriver getWebDriver() {
+        return test.get().getSelenium().getWebDriverContext().getWebDrivers().getWebDriver();
+    }
 
 }

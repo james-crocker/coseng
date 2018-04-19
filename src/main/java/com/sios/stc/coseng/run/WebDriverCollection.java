@@ -10,21 +10,23 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.seleniumhq.selenium.fluent.FluentWebDriver;
 
 import com.paulhammant.ngwebdriver.NgWebDriver;
 import com.sios.stc.coseng.util.Stringer;
 
 public final class WebDriverCollection {
 
-    private Platform           platform       = null;
-    private String             browserName    = null;
-    private String             browserVersion = null;
-    private Map<String, ?>     capabilities   = null;
-    private WebDriver          webDriver      = null;
-    private WebDriverWait      webDriverWait  = null;
-    private Actions            actions        = null;
-    private JavascriptExecutor jsExecutor     = null;
-    private NgWebDriver        ngWebDriver    = null;
+    private Platform           platform        = null;
+    private String             browserName     = null;
+    private String             browserVersion  = null;
+    private Map<String, ?>     capabilities    = null;
+    private WebDriver          webDriver       = null;
+    private WebDriverWait      webDriverWait   = null;
+    private Actions            actions         = null;
+    private JavascriptExecutor jsExecutor      = null;
+    private NgWebDriver        ngWebDriver     = null;
+    private FluentWebDriver    fluentWebDriver = null;
 
     WebDriverCollection(RemoteWebDriver remoteWebDriver, long waitTimeout, long waitSleep) {
         if (remoteWebDriver == null)
@@ -50,6 +52,7 @@ public final class WebDriverCollection {
         actions = new Actions(remoteWebDriver);
         jsExecutor = (JavascriptExecutor) remoteWebDriver;
         ngWebDriver = new NgWebDriver((JavascriptExecutor) remoteWebDriver);
+        fluentWebDriver = new FluentWebDriver(remoteWebDriver);
     }
 
     String getBrowserName() {
@@ -86,6 +89,10 @@ public final class WebDriverCollection {
 
     NgWebDriver getNgWebDriver() {
         return ngWebDriver;
+    }
+
+    FluentWebDriver getFluentWebDriver() {
+        return fluentWebDriver;
     }
 
 }

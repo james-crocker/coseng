@@ -6,6 +6,6 @@ import com.google.gson.JsonDeserializer;
 
 public interface IIntegratorGsonDeserializer {
 
-    abstract public Map<Class<?>, JsonDeserializer<?>> get();
+    public Map<Class<?>, JsonDeserializer<?>> get();
 
 }

@@ -1,5 +1,7 @@
 package com.sios.stc.coseng.run;
 
+import java.net.URL;
+
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import com.google.gson.annotations.Expose;
@@ -8,9 +10,15 @@ import com.sios.stc.coseng.exceptions.CosengConfigException;
 public final class Site {
 
     @Expose
+    private URL     baseUrl     = null;
+    @Expose
     private Boolean angularApp  = null;
     @Expose
     private Boolean angular2App = null;
+
+    public URL getBaseUrl() {
+        return baseUrl;
+    }
 
     public boolean isAngularApp() {
         return angularApp;
@@ -27,7 +35,6 @@ public final class Site {
 
     void validateAndPrepare() {
         try {
-            /* angularApps */
             if (angularApp == null)
                 angularApp = false;
             if (angular2App == null)

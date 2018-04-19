@@ -16,11 +16,11 @@
  */
 package com.sios.stc.coseng.integration;
 
-import com.sios.stc.coseng.Triggers.Phase;
+import com.sios.stc.coseng.Triggers.TestPhase;
 import com.sios.stc.coseng.Triggers.TriggerOn;
 
 public interface IIntegratorListener {
 
-    public void notifyIntegrators(TriggerOn trigger, Phase phase);
+    public void notifyIntegrators(TriggerOn trigger, TestPhase phase);
 
 }

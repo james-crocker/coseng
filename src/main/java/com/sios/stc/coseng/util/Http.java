@@ -19,7 +19,6 @@ package com.sios.stc.coseng.util;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.util.LinkedHashMap;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -40,57 +39,39 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
  */
 public final class Http {
 
-    private static Integer responseCodeDefault    = 0;
-    private static String  responseMessageDefault = Stringer.UNKNOWN;
-
     /* Use URI rather than URL to avoid blocking with equals */
-    private static LinkedHashMap<URI, Integer> urisResponseCode    = new LinkedHashMap<URI, Integer>();
-    private static LinkedHashMap<URI, String>  urisResponseMessage = new LinkedHashMap<URI, String>();
-    private static LinkedHashMap<URI, Boolean> urisPassFail        = new LinkedHashMap<URI, Boolean>();
+    private static HttpResponse httpResponse = new HttpResponse();
 
     public static boolean isAccessible(URL url) {
-        try {
-            URI uri = new URI(url.toExternalForm());
-            if (urisPassFail.containsKey(uri))
-                return urisPassFail.get(uri);
-        } catch (Exception ignore) {
-            // do nothing
-        }
-        return false;
+        return httpResponse.isPassed(url);
     }
 
     public static Integer getResponseCode(URL url) {
-        try {
-            URI uri = new URI(url.toExternalForm());
-            if (urisResponseCode.containsKey(uri))
-                return urisResponseCode.get(uri);
-        } catch (Exception ignore) {
-            // do nothing
-        }
-        return responseCodeDefault;
+        return httpResponse.getCode(url);
     }
 
     public static String getResponseMessage(URL url) {
-        try {
-            URI uri = new URI(url.toExternalForm());
-            if (urisResponseMessage.containsKey(uri))
-                return urisResponseMessage.get(uri);
-        } catch (Exception ignore) {
-            // do nothing
-        }
-        return responseMessageDefault;
+        return httpResponse.getMessage(url);
+    }
+
+    public static String connect(URL url) {
+        return connect(url, null, null, null, null, null, null, null);
+    }
+
+    public static String connect(URL url, Integer millisTimeout) {
+        return connect(url, null, null, millisTimeout, null, null, null, null);
     }
 
     public static String connect(URL url, HttpMethod requestMethod, BrowserVersion browserVersion,
             Integer millisTimeout, Boolean useInsecureSsl, Boolean enableJavaScript, Boolean enableCss,
             Boolean enableDownloadImages) {
-        Integer responseCode = responseCodeDefault;
-        String responseMessage = responseMessageDefault;
+        Integer responseCode = HttpResponse.codeDefault;
+        String responseMessage = HttpResponse.messageDefault;
         String messageBody = StringUtils.EMPTY;
         try {
             URI uri = new URI(url.toExternalForm());
             /* Only connect once for any given URI */
-            if (!hasResponse(uri)) {
+            if (!httpResponse.hasResponse(uri)) {
                 if (requestMethod == null)
                     requestMethod = HttpMethod.GET;
                 if (browserVersion == null)
@@ -129,32 +110,21 @@ public final class Http {
                         responseMessage = ((HtmlPage) page).getWebResponse().getStatusMessage();
                         messageBody = ((HtmlPage) page).getWebResponse().getContentAsString();
                     }
-                    urisResponseCode.put(uri, responseCode);
-                    urisResponseMessage.put(uri, responseMessage);
-                    urisPassFail.put(uri, true);
+                    httpResponse.putCode(uri, responseCode);
+                    httpResponse.putMessage(uri, responseMessage);
+                    httpResponse.setPassed(uri, true);
                 } catch (FailingHttpStatusCodeException | IOException e) {
                     if (e instanceof FailingHttpStatusCodeException)
                         responseCode = ((FailingHttpStatusCodeException) e).getStatusCode();
-                    urisResponseCode.put(uri, responseCode);
-                    urisResponseMessage.put(uri, e.getMessage());
-                    urisPassFail.put(uri, false);
+                    httpResponse.putCode(uri, responseCode);
+                    httpResponse.putMessage(uri, e.getMessage());
+                    httpResponse.setPassed(uri, false);
                 }
-            } else {
-                urisResponseCode.put(uri, responseCode);
-                urisResponseMessage.put(uri, responseMessage);
-                urisPassFail.put(uri, false);
             }
         } catch (Exception ignoree) {
             // do nothing
         }
         return messageBody;
-    }
-
-    private static boolean hasResponse(URI uri) {
-        if (uri != null && urisResponseCode.containsKey(uri) && urisResponseMessage.containsKey(uri)
-                && urisPassFail.containsKey(uri))
-            return true;
-        return false;
     }
 
 }

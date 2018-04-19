@@ -16,11 +16,12 @@ import com.sios.stc.coseng.util.Stringer;
 
 public final class DriverServices {
 
-    private static final InheritableThreadLocal<DriverService> driverService           = new InheritableThreadLocal<DriverService>();
-    private DriverService                                      concurrentDriverService = null;
-    private Browser                                            browser                 = null;
-    private File                                               executable              = null;
-    private File                                               logFile                 = null;
+    private static final ThreadLocal<DriverService> driverService           = new ThreadLocal<DriverService>();
+    private DriverService                           concurrentDriverService = null;
+    private boolean                                 concurrentCapable       = false;
+    private Browser                                 browser                 = null;
+    private File                                    executable              = null;
+    private File                                    logFile                 = null;
 
     /*
      * Concurrent web driver services are capable of being started once and used for
@@ -29,82 +30,67 @@ public final class DriverServices {
      */
 
     DriverServices(Browser browser, File executable, File logFile) {
+        this.browser = browser;
+        this.executable = executable;
+        this.logFile = logFile;
         switch (browser) {
             case FIREFOX:
-                /*
-                 * Incapable of concurrent web driver instantiations; must use
-                 * WebDriverServiceFactory.
-                 */
+                concurrentCapable = false;
                 break;
             case CHROME:
-                if (executable != null)
-                    concurrentDriverService = new ChromeDriverService.Builder().usingDriverExecutable(executable)
-                            .withLogFile(logFile).usingAnyFreePort().build();
-                else
-                    concurrentDriverService = new ChromeDriverService.Builder().withLogFile(logFile).usingAnyFreePort()
-                            .build();
+                concurrentCapable = true;
+                concurrentDriverService = DriverServiceFactory.getDriverService(browser, executable, logFile);
                 break;
             case EDGE:
-                /*
-                 * Incapable of concurrent web driver instantiations; must use
-                 * WebDriverServiceFactory.
-                 */
-
+                concurrentCapable = false;
                 break;
             case IE:
-                if (executable != null)
-                    concurrentDriverService = new EdgeDriverService.Builder().usingDriverExecutable(executable)
-                            .withLogFile(logFile).usingAnyFreePort().build();
-                else
-                    concurrentDriverService = new EdgeDriverService.Builder().withLogFile(logFile).usingAnyFreePort()
-                            .build();
+                concurrentCapable = true;
+                concurrentDriverService = DriverServiceFactory.getDriverService(browser, executable, logFile);
                 break;
             case SAFARI:
-                /*
-                 * Incapable of concurrent web driver instantiations; must use
-                 * WebDriverServiceFactory.
-                 */
-
+                concurrentCapable = false;
                 break;
             case OPERA:
-                /*
-                 * Incapable of concurrent web driver instantiations; must use
-                 * WebDriverServiceFactory.
-                 */
-
+                concurrentCapable = false;
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported browser " + Stringer.wrapBracket(browser));
         }
-        this.browser = browser;
-        this.executable = executable;
-        this.logFile = logFile;
+    }
+
+    boolean isConcurrentCapable() {
+        return concurrentCapable;
     }
 
     DriverService get() {
         if (concurrentDriverService != null)
-            /* Concurrent driver service; single instance. */
             return concurrentDriverService;
         if (driverService.get() == null)
             driverService.set(DriverServiceFactory.getDriverService(browser, executable, logFile));
         return driverService.get();
     }
 
-    void start() throws IOException {
+    void start() {
         DriverService service = get();
         if (!isRunning(service)) {
-            if (service instanceof GeckoDriverService) {
-                ((GeckoDriverService) service).start();
-            } else if (service instanceof ChromeDriverService) {
-                ((ChromeDriverService) service).start();
-            } else if (service instanceof EdgeDriverService) {
-                ((EdgeDriverService) service).start();
-            } else if (service instanceof InternetExplorerDriverService) {
-                ((InternetExplorerDriverService) service).start();
-            } else if (service instanceof SafariDriverService) {
-                ((SafariDriverService) service).start();
-            } else if (service instanceof OperaDriverService) {
-                ((OperaDriverService) service).start();
+            try {
+                if (service instanceof GeckoDriverService) {
+                    ((GeckoDriverService) service).start();
+                } else if (service instanceof ChromeDriverService) {
+                    ((ChromeDriverService) service).start();
+                } else if (service instanceof EdgeDriverService) {
+                    ((EdgeDriverService) service).start();
+                } else if (service instanceof InternetExplorerDriverService) {
+                    ((InternetExplorerDriverService) service).start();
+                } else if (service instanceof SafariDriverService) {
+                    ((SafariDriverService) service).start();
+                } else if (service instanceof OperaDriverService) {
+                    ((OperaDriverService) service).start();
+                }
+            } catch (IOException e) {
+                throw new IllegalStateException("Driver service " + Stringer.wrapBracket(service.getClass().getName())
+                        + " could not be started", e);
             }
         } else {
             throw new IllegalStateException(

@@ -22,7 +22,7 @@ import java.util.List;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import com.google.gson.annotations.Expose;
-import com.sios.stc.coseng.Triggers.Phase;
+import com.sios.stc.coseng.Triggers.TestPhase;
 import com.sios.stc.coseng.Triggers.TriggerOn;
 
 /**
@@ -45,7 +45,7 @@ public final class Test {
         return allFields;
     }
 
-    List<Field> getFields(TriggerOn trigger, Phase phase) {
+    List<Field> getFields(TriggerOn trigger, TestPhase phase) {
         return Common.getFields(fields, trigger, phase);
     }
 
@@ -60,17 +60,17 @@ public final class Test {
      * @since 3.0
      * @version.coseng
      */
-    Field getField(String attribute, TriggerOn trigger, Phase phase) {
+    Field getField(String attribute, TriggerOn trigger, TestPhase phase) {
         return Common.getField(fields, attribute, trigger, phase);
     }
 
-    List<Field> getParamFields(String paramName, String paramValue, TriggerOn trigger, Phase phase) {
+    List<Field> getParamFields(String paramName, String paramValue, TriggerOn trigger, TestPhase phase) {
         List<Field> matchedFields = new ArrayList<Field>();
         try {
             for (TestParamField pf : paramFields) {
                 if (paramName.equals(pf.getParamName()) && paramValue.equals(pf.getParamValue())) {
                     for (Field field : pf.getFields()) {
-                        if (trigger.equals(field.getTriggerOn()) && phase.equals(field.getPhase())) {
+                        if (trigger.equals(field.getTriggerOn()) && phase.equals(field.getTestPhase())) {
                             matchedFields.add(field);
                         }
                     }

@@ -152,7 +152,6 @@ public final class SeleniumWebDriver {
                          * Chrome chromedriver single instance *can* process parallel sessions (see
                          * TestNgListener)
                          */
-                        // webDriver = new ChromeDriver((ChromeDriverService) service, co);
                         remoteWebDriver = new RemoteWebDriver(driverServices.get().getUrl(), co);
                     } else {
                         remoteWebDriver = new RemoteWebDriver(gridUrl, co);
@@ -263,35 +262,39 @@ public final class SeleniumWebDriver {
          * Don't use 'close()'; it will close the window under focus but may cause
          * timeouts when using Selenium GRID Hub
          */
-        WebDriver webDriver = webDrivers.getWebDriver();
-        webDriver.quit();
-        /*
-         * For web driver services which can't process concurrently, for safe measure
-         * stop the service even though the webDriver.quit() should close the session
-         * and therfore the service.
-         */
-        Browser browser = test.getSelenium().getBrowser().getType();
-        switch (browser) {
-            case FIREFOX:
-                driverServices.stop();
-                break;
-            case CHROME:
-                break;
-            case EDGE:
-                driverServices.stop();
-                break;
-            case IE:
-                break;
-            case SAFARI:
-                driverServices.stop();
-                break;
-            case OPERA:
-                driverServices.stop();
-                break;
+        try {
+            WebDriver webDriver = webDrivers.getWebDriver();
+            webDriver.quit();
+            /*
+             * For web driver services which can't process concurrently, for safe measure
+             * stop the service even though the webDriver.quit() should close the session
+             * and therfore the service.
+             */
+            Browser browser = test.getSelenium().getBrowser().getType();
+            switch (browser) {
+                case FIREFOX:
+                    driverServices.stop();
+                    break;
+                case CHROME:
+                    break;
+                case EDGE:
+                    driverServices.stop();
+                    break;
+                case IE:
+                    break;
+                case SAFARI:
+                    driverServices.stop();
+                    break;
+                case OPERA:
+                    driverServices.stop();
+                    break;
+            }
+            stoppedWebDrivers.getAndIncrement();
+            log.debug("Stopped web driver [{}], thread [{}]", webDrivers.getWebDriver().hashCode(),
+                    Thread.currentThread().getId());
+        } catch (Exception ignore) {
+            // best effort; may have been skipRemainingTestsOnFailure
         }
-        stoppedWebDrivers.getAndIncrement();
-        log.debug("Stopped web driver [{}], thread [{}]", webDrivers.getWebDriver().hashCode(),
-                Thread.currentThread().getId());
     }
 
     void validateAndPrepare(Test test) {

@@ -8,7 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import com.sios.stc.coseng.Triggers.Phase;
+import com.sios.stc.coseng.Triggers.TestPhase;
 import com.sios.stc.coseng.Triggers.TriggerOn;
 import com.sios.stc.coseng.integration.IIntegratorGsonSerializer;
 
@@ -34,9 +34,9 @@ public final class VersionOneJsonSerializer implements IIntegratorGsonSerializer
         };
         serializers.put(TriggerOn.class, triggerOnTypeSerializer);
 
-        JsonSerializer<Phase> phaseTypeSerializer = new JsonSerializer<Phase>() {
+        JsonSerializer<TestPhase> phaseTypeSerializer = new JsonSerializer<TestPhase>() {
             @Override
-            public JsonElement serialize(Phase arg0, Type arg1, JsonSerializationContext arg2) {
+            public JsonElement serialize(TestPhase arg0, Type arg1, JsonSerializationContext arg2) {
                 if (arg0 != null) {
                     JsonParser parser = new JsonParser();
                     return parser.parse(arg0.toString().toUpperCase());
@@ -44,7 +44,7 @@ public final class VersionOneJsonSerializer implements IIntegratorGsonSerializer
                 return null;
             }
         };
-        serializers.put(Phase.class, phaseTypeSerializer);
+        serializers.put(TestPhase.class, phaseTypeSerializer);
 
         return serializers;
     }

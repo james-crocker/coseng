@@ -6,6 +6,6 @@ import com.google.gson.JsonSerializer;
 
 public interface IIntegratorGsonSerializer {
 
-    abstract public Map<Class<?>, JsonSerializer<?>> get();
+    public Map<Class<?>, JsonSerializer<?>> get();
 
 }

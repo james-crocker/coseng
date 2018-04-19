@@ -2,6 +2,7 @@ package com.sios.stc.coseng.run;
 
 import java.io.File;
 
+import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.edge.EdgeDriverService;
 import org.openqa.selenium.firefox.GeckoDriverService;
 import org.openqa.selenium.opera.OperaDriverService;
@@ -26,12 +27,20 @@ public final class DriverServiceFactory {
                             .usingAnyFreePort().build();
                 else
                     return new GeckoDriverService.Builder().withLogFile(logFile).usingAnyFreePort().build();
+            case CHROME:
+                if (executable != null)
+                    return new ChromeDriverService.Builder().usingDriverExecutable(executable).withLogFile(logFile)
+                            .usingAnyFreePort().build();
+                else
+                    return new ChromeDriverService.Builder().withLogFile(logFile).usingAnyFreePort().build();
             case EDGE:
                 if (executable != null)
                     return new EdgeDriverService.Builder().usingDriverExecutable(executable).withLogFile(logFile)
                             .usingAnyFreePort().build();
                 else
                     return new EdgeDriverService.Builder().withLogFile(logFile).usingAnyFreePort().build();
+            case IE:
+                // TODO InternetExplorerDriverService.Builder isn't like the other builders
             case SAFARI:
                 if (executable != null)
                     return new SafariDriverService.Builder().usingDriverExecutable(executable).withLogFile(logFile)

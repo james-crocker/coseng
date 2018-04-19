@@ -1,7 +1,0 @@
-{
-    "browserName": "internet explorer",
-    "ensureCleanSession": true,
-    "platform": "WINDOWS",
-    "se:ieOptions": {},
-    "version": null
-}
