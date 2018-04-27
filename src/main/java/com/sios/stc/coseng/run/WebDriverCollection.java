@@ -6,7 +6,6 @@ import java.util.Map;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Platform;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -21,7 +20,7 @@ public final class WebDriverCollection {
     private String             browserName     = null;
     private String             browserVersion  = null;
     private Map<String, ?>     capabilities    = null;
-    private WebDriver          webDriver       = null;
+    private RemoteWebDriver    remoteWebDriver = null;
     private WebDriverWait      webDriverWait   = null;
     private Actions            actions         = null;
     private JavascriptExecutor jsExecutor      = null;
@@ -47,7 +46,7 @@ public final class WebDriverCollection {
         if (capabilities == null)
             capabilities = new HashMap<String, Object>();
 
-        webDriver = remoteWebDriver;
+        this.remoteWebDriver = remoteWebDriver;
         webDriverWait = new WebDriverWait(remoteWebDriver, waitTimeout, waitSleep);
         actions = new Actions(remoteWebDriver);
         jsExecutor = (JavascriptExecutor) remoteWebDriver;
@@ -71,8 +70,8 @@ public final class WebDriverCollection {
         return capabilities;
     }
 
-    org.openqa.selenium.WebDriver getWebDriver() {
-        return webDriver;
+    RemoteWebDriver getRemoteWebDriver() {
+        return remoteWebDriver;
     }
 
     WebDriverWait getWebDriverWait() {

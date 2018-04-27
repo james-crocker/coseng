@@ -42,6 +42,7 @@ public final class CosengTest {
     private static final InheritableThreadLocal<Window>  window  = new InheritableThreadLocal<Window>();
     private static final InheritableThreadLocal<Log>     log     = new InheritableThreadLocal<Log>();
     private static final InheritableThreadLocal<Uri>     uri     = new InheritableThreadLocal<Uri>();
+    private static final InheritableThreadLocal<File>    file    = new InheritableThreadLocal<File>();
 
     public CosengTest() {
         test.set(TestNgListener.getTest());
@@ -49,6 +50,7 @@ public final class CosengTest {
         window.set(new Window(test.get()));
         log.set(new Log(test.get(), window.get()));
         uri.set(new Uri(test.get(), log.get(), angular.get()));
+        file.set(new File(test.get()));
     }
 
     public static Test getTest() {
@@ -69,6 +71,10 @@ public final class CosengTest {
 
     public static Uri getUri() {
         return uri.get();
+    }
+
+    public static File getFile() {
+        return file.get();
     }
 
     public static WebDrivers getWebDrivers() {

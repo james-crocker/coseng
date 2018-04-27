@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Platform;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -35,8 +36,12 @@ public final class WebDrivers {
         return getCollection().getCapabilities();
     }
 
-    public org.openqa.selenium.WebDriver getWebDriver() {
-        return getCollection().getWebDriver();
+    public RemoteWebDriver getRemoteWebDriver() {
+        return getCollection().getRemoteWebDriver();
+    }
+
+    public WebDriver getWebDriver() {
+        return getCollection().getRemoteWebDriver();
     }
 
     public WebDriverWait getWebDriverWait() {

@@ -12,6 +12,8 @@ import org.openqa.selenium.remote.service.DriverService;
 import org.openqa.selenium.safari.SafariDriverService;
 
 import com.sios.stc.coseng.run.SeleniumBrowser.Browser;
+import com.sios.stc.coseng.util.Random;
+import com.sios.stc.coseng.util.Resource;
 import com.sios.stc.coseng.util.Stringer;
 
 public final class DriverServices {
@@ -67,7 +69,7 @@ public final class DriverServices {
         if (concurrentDriverService != null)
             return concurrentDriverService;
         if (driverService.get() == null)
-            driverService.set(DriverServiceFactory.getDriverService(browser, executable, logFile));
+            driverService.set(DriverServiceFactory.getDriverService(browser, executable, getUniqueLogFile()));
         return driverService.get();
     }
 
@@ -135,6 +137,21 @@ public final class DriverServices {
             return ((OperaDriverService) service).isRunning();
         }
         return false;
+    }
+
+    private File getUniqueLogFile() {
+        String uniqueFile;
+        try {
+            uniqueFile = logFile.getCanonicalPath() + Stringer.Separator.FILENAME.get()
+                    + String.valueOf(Random.getRandomInt(1, 1024)) + Stringer.Separator.FILENAME.get() + "threadId"
+                    + Stringer.Separator.FILENAME.get() + Thread.currentThread().getId();
+        } catch (IllegalArgumentException | IOException ignore) {
+            // best effort
+            return logFile;
+        }
+        File file = new File(uniqueFile);
+        Resource.touchFile(file);
+        return file;
     }
 
 }

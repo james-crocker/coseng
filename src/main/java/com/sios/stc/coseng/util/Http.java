@@ -62,6 +62,10 @@ public final class Http {
         return connect(url, null, null, millisTimeout, null, null, null, null);
     }
 
+    public static String connect(URL url, Integer millisTimeout, boolean useInsecureSsl) {
+        return connect(url, null, null, millisTimeout, useInsecureSsl, null, null, null);
+    }
+
     public static String connect(URL url, HttpMethod requestMethod, BrowserVersion browserVersion,
             Integer millisTimeout, Boolean useInsecureSsl, Boolean enableJavaScript, Boolean enableCss,
             Boolean enableDownloadImages) {

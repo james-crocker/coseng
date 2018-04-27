@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 public class UriUtil {
 
     public enum Uri {
-        SCHEME_FILE("file"), SCHEME_RESOURCE("resource"), PATH_SEPARATOR("/");
+        SCHEME_FILE("file"), SCHEME_RESOURCE("resource"), SCHEME_SEPARATOR(":"), PATH_SEPARATOR("/");
 
         private String value = null;
 
@@ -28,22 +28,33 @@ public class UriUtil {
             return this.value.equals(value);
         }
     }
-    // private static final String SCHEME_FILE = "file";
-    // private static final String SCHEME_RESOURCE = "resource";
-    // private static final String PATH_SEPARATOR = "/";
 
     public static URI getAbsolute(String resource) throws URISyntaxException, IOException {
-        return getCanonical(Uri.PATH_SEPARATOR.get() + resource);
+        if (resource == null)
+            throw new IllegalArgumentException("Field resource must be provided");
+        String scheme = getScheme(resource);
+        String part = getPart(resource);
+        if ((scheme == null || Uri.SCHEME_FILE.equals(scheme)) && !part.startsWith(Uri.PATH_SEPARATOR.get()))
+            return getCanonical(Uri.PATH_SEPARATOR.get() + part);
+        return getCanonical(resource);
     }
 
     public static URI getCanonical(String resource) throws URISyntaxException, IOException {
-        if (resource == null || resource.isEmpty()) {
+        if (resource == null || resource.isEmpty())
             throw new IllegalArgumentException("Field resource must be provided");
-        }
-        return getCanonical(new URI(null, null, resource, null));
+        String scheme = getScheme(resource);
+        String part = getPart(resource);
+        /* Let getCanonical(URI) handle making absolute w/ current path */
+        if (scheme == null || Uri.SCHEME_FILE.equals(scheme))
+            return getCanonical(new URI(null, null, part, null));
+        if (!part.startsWith(Uri.PATH_SEPARATOR.get()))
+            part = Uri.PATH_SEPARATOR.get() + part;
+        return getCanonical(new URI(scheme, null, part, null));
     }
 
     public static URI getCanonical(URI uri) throws URISyntaxException, IOException {
+        if (uri == null)
+            throw new IllegalArgumentException("Field uri must be provided");
         /*-
          * Presume a File resource
          * URI: "dir1/dir2/file" (absolute false, opaque false)
@@ -63,19 +74,22 @@ public class UriUtil {
          * 
          */
         if (uri.getScheme() == null || uri.getScheme().isEmpty()) {
-            if (uri.getPath().startsWith(Uri.PATH_SEPARATOR.get())) {
+            if (uri.getPath().startsWith(Uri.PATH_SEPARATOR.get()))
                 /*- Treat as absolute; URI: "/dir1/dir2/file" => file:/dir1/dir2/file */
                 return new URI(Uri.SCHEME_FILE.get(), null, uri.getPath(), null).normalize();
-            } else {
+            else
                 /*- Treat as relative; URI: "dir1/dir2/file" => file:/<current_dir>/dir1/dir2/file */
                 return new URI(Uri.SCHEME_FILE.get(), null,
                         new File(StringUtils.EMPTY).getCanonicalPath() + Uri.PATH_SEPARATOR.get() + uri.getPath(), null)
                                 .normalize();
-            }
-        } else if (isFileScheme(uri) && uri.isOpaque()) {
-            /*- Treat as relative; URI "file:dir1/dir2/file" => file:/<current_dir>/dir1/dir2/file */
-            return new URI(Uri.SCHEME_FILE.get(), null, new File(StringUtils.EMPTY).getCanonicalPath()
-                    + Uri.PATH_SEPARATOR.get() + uri.getSchemeSpecificPart(), null).normalize();
+        } else if (uri.isOpaque()) {
+            if (isFileScheme(uri))
+                /*- Treat as relative; URI "file:dir1/dir2/file" => file:/<current_dir>/dir1/dir2/file */
+                return new URI(Uri.SCHEME_FILE.get(), null, new File(StringUtils.EMPTY).getCanonicalPath()
+                        + Uri.PATH_SEPARATOR.get() + uri.getSchemeSpecificPart(), null).normalize();
+            else if (!uri.getPath().startsWith(Uri.PATH_SEPARATOR.get()))
+                return new URI(uri.getScheme(), uri.getHost(), Uri.PATH_SEPARATOR.get() + uri.getPath(),
+                        uri.getFragment());
         }
         return uri;
     }
@@ -147,6 +161,18 @@ public class UriUtil {
         } else {
             return new URI(Uri.SCHEME_FILE.get(), null, uri1.getPath() + uri2.getPath(), null).normalize();
         }
+    }
+
+    private static String getScheme(String resource) {
+        if (resource != null && resource.contains(Uri.SCHEME_SEPARATOR.get()))
+            return resource.substring(0, resource.indexOf(Uri.SCHEME_SEPARATOR.get()));
+        return null;
+    }
+
+    private static String getPart(String resource) {
+        if (resource != null && resource.contains(Uri.SCHEME_SEPARATOR.get()))
+            return resource.substring(resource.indexOf(Uri.SCHEME_SEPARATOR.get()) + 1);
+        return resource;
     }
 
 }

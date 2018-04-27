@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 import com.paulhammant.ngwebdriver.NgWebDriver;
 import com.sios.stc.coseng.run.Test;
@@ -45,7 +45,8 @@ public final class Uri {
                 angular.waitToFinish();
                 return new URI(ngWebDriver.getLocationAbsUrl());
             } else {
-                WebDriver webDriver = test.getSelenium().getWebDriverContext().getWebDrivers().getWebDriver();
+                RemoteWebDriver webDriver = test.getSelenium().getWebDriverContext().getWebDrivers()
+                        .getRemoteWebDriver();
                 return new URI(webDriver.getCurrentUrl());
             }
         } catch (URISyntaxException ignore) {
@@ -64,7 +65,8 @@ public final class Uri {
         if (test.getCoseng().getUri().isEnableFind()) {
             log.results(org.apache.logging.log4j.Level.INFO, commonMsg, null, null);
             if (onRoute != null && !onRoute.toString().isEmpty()) {
-                WebDriver webDriver = test.getSelenium().getWebDriverContext().getWebDrivers().getWebDriver();
+                RemoteWebDriver webDriver = test.getSelenium().getWebDriverContext().getWebDrivers()
+                        .getRemoteWebDriver();
                 angular.waitToFinish();
                 List<org.openqa.selenium.WebElement> uriList = webDriver.findElements(by);
                 for (org.openqa.selenium.WebElement webElement : uriList) {

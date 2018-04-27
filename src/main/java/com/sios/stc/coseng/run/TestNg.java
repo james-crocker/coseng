@@ -40,7 +40,7 @@ public final class TestNg {
     @Expose
     private Boolean  skipRemainingTestsOnFailure = null;
     @Expose
-    private Set<URI> integratorsJson             = null;
+    private Set<URI> integratorJsons             = null;
     @Expose
     private Integer  verbosity                   = null;
 
@@ -130,12 +130,12 @@ public final class TestNg {
              * reference; so need to validate a bit differently from the rest of the
              * Config/Run classes.
              */
-            if (integratorsJson != null) {
-                if (integratorsJson.contains(null)) {
+            if (integratorJsons != null) {
+                if (integratorJsons.contains(null)) {
                     throw new IllegalArgumentException("Field integratorJsons may not contain null elements");
                 } else {
                     Set<URI> canonicalIntegrators = new HashSet<URI>();
-                    for (URI uri : integratorsJson) {
+                    for (URI uri : integratorJsons) {
                         URI canonicalIntegrator;
                         try {
                             canonicalIntegrator = UriUtil.getCanonical(uri);
@@ -148,7 +148,7 @@ public final class TestNg {
                         Integrator concreteIntegrator = integrator.validateAndPrepare(test);
                         integrators.add(concreteIntegrator);
                     }
-                    integratorsJson = canonicalIntegrators;
+                    integratorJsons = canonicalIntegrators;
                 }
             }
         } catch (Exception e) {

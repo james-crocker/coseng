@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 import com.sios.stc.coseng.run.Test;
 import com.sios.stc.coseng.run.TestNgContext;
@@ -34,7 +34,7 @@ public final class Window {
 
     public void saveScreenshot(String filename) {
         try {
-            WebDriver webDriver = test.getSelenium().getWebDriverContext().getWebDrivers().getWebDriver();
+            RemoteWebDriver webDriver = test.getSelenium().getWebDriverContext().getWebDrivers().getRemoteWebDriver();
             if (test.getCoseng().getScreenshot().isEnable()
                     || test.getCoseng().getScreenshot().isEnableOnAssertFail()) {
                 LinkedList<URI> filePaths = new LinkedList<URI>();

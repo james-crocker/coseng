@@ -14,10 +14,8 @@ public final class Angular {
     public void waitToFinish() {
         /* ngWebDriver won't be available until TestNG thread starts a web driver */
         NgWebDriver ngWebDriver = test.getSelenium().getWebDriverContext().getWebDrivers().getNgWebDriver();
-        if (test.getSite().isAngular2App())
-            ngWebDriver.waitForAngular2RequestsToFinish();
-        else if (test.getSite().isAngularApp())
-            ngWebDriver.waitForAngularRequestsToFinish();
+        /* 1.0 NgWebDriver had waitForAngular2RequestsToFinish() */
+        ngWebDriver.waitForAngularRequestsToFinish();
     }
 
 }

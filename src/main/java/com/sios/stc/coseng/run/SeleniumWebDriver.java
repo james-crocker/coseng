@@ -12,7 +12,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.MutableCapabilities;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
@@ -116,8 +115,7 @@ public final class SeleniumWebDriver {
         try {
             Browser browser = test.getSelenium().getBrowser().getType();
             File browserExecutable = test.getSelenium().getBrowser().getExecutable();
-            MutableCapabilities options = test.getSelenium().getBrowser().getOption().getOptions();
-            ExtraCapabilities capabilities = test.getSelenium().getBrowser().getOption().getCapabilities();
+            MutableCapabilities options = test.getSelenium().getBrowser().getOptions();
             Location location = getLocation();
             URL gridUrl = getGridUrl();
 
@@ -126,8 +124,6 @@ public final class SeleniumWebDriver {
             switch (browser) {
                 case FIREFOX:
                     FirefoxOptions fo = (FirefoxOptions) options;
-                    if (capabilities != null)
-                        fo.merge(capabilities);
                     if (Location.NODE.equals(location)) {
                         if (browserExecutable != null)
                             fo.setBinary(browserExecutable.getCanonicalPath());
@@ -143,8 +139,6 @@ public final class SeleniumWebDriver {
                     break;
                 case CHROME:
                     ChromeOptions co = (ChromeOptions) options;
-                    if (capabilities != null)
-                        co.merge(capabilities);
                     if (Location.NODE.equals(location)) {
                         if (browserExecutable != null)
                             co.setBinary(browserExecutable.getCanonicalPath());
@@ -159,8 +153,6 @@ public final class SeleniumWebDriver {
                     break;
                 case EDGE:
                     EdgeOptions eo = (EdgeOptions) options;
-                    if (capabilities != null)
-                        eo.merge(capabilities);
                     if (Location.NODE.equals(location)) {
                         /*
                          * Edge MicrosoftWebDriver single instance can't process parallel sessions (see
@@ -174,8 +166,6 @@ public final class SeleniumWebDriver {
                     break;
                 case IE:
                     InternetExplorerOptions ieo = (InternetExplorerOptions) options;
-                    if (capabilities != null)
-                        ieo.merge(capabilities);
                     if (Location.NODE.equals(location)) {
                         /*
                          * Internet Explorer IEDriverServer single instance *can* process parallel
@@ -188,8 +178,6 @@ public final class SeleniumWebDriver {
                     break;
                 case SAFARI:
                     SafariOptions so = (SafariOptions) options;
-                    if (capabilities != null)
-                        so.merge(capabilities);
                     if (Location.NODE.equals(location)) {
                         /*
                          * Safari web driver single instance can't process parallel sessions (see
@@ -203,8 +191,6 @@ public final class SeleniumWebDriver {
                     break;
                 case OPERA:
                     OperaOptions oo = (OperaOptions) options;
-                    if (capabilities != null)
-                        oo.merge(capabilities);
                     if (Location.NODE.equals(location)) {
                         /*
                          * Opera web driver single instance can't process parallel sessions (see
@@ -232,10 +218,10 @@ public final class SeleniumWebDriver {
             remoteWebDriver.setFileDetector(new LocalFileDetector());
 
             /* Set dimension or maximize */
-            Dimension dimension = test.getSelenium().getBrowser().getOption().getDimension();
+            Dimension dimension = test.getSelenium().getBrowser().getDimension();
             if (dimension != null)
                 remoteWebDriver.manage().window().setSize(dimension);
-            else if (test.getSelenium().getBrowser().getOption().isMaximize())
+            else if (test.getSelenium().getBrowser().isMaximize())
                 remoteWebDriver.manage().window().maximize();
 
             /* Set logging level */
@@ -247,7 +233,7 @@ public final class SeleniumWebDriver {
                     test.getSelenium().getWebDriverContext().getWaitSleepMillisecond());
 
             startedWebDrivers.getAndIncrement();
-            log.debug("Started web driver [{}], thread [{}]", webDrivers.getWebDriver().hashCode(),
+            log.debug("Started web driver [{}], thread [{}]", webDrivers.getRemoteWebDriver().hashCode(),
                     Thread.currentThread().getId());
         } catch (Exception e) {
             throw new RuntimeException(
@@ -257,14 +243,9 @@ public final class SeleniumWebDriver {
     }
 
     void stopWebDriver() {
-        /*
-         * Calls 'dispose()'; closes all browser windows and safely ends the session.
-         * Don't use 'close()'; it will close the window under focus but may cause
-         * timeouts when using Selenium GRID Hub
-         */
         try {
-            WebDriver webDriver = webDrivers.getWebDriver();
-            webDriver.quit();
+            RemoteWebDriver remoteWebDriver = webDrivers.getRemoteWebDriver();
+            remoteWebDriver.quit();
             /*
              * For web driver services which can't process concurrently, for safe measure
              * stop the service even though the webDriver.quit() should close the session
@@ -290,7 +271,7 @@ public final class SeleniumWebDriver {
                     break;
             }
             stoppedWebDrivers.getAndIncrement();
-            log.debug("Stopped web driver [{}], thread [{}]", webDrivers.getWebDriver().hashCode(),
+            log.debug("Stopped web driver [{}], thread [{}]", webDrivers.getRemoteWebDriver().hashCode(),
                     Thread.currentThread().getId());
         } catch (Exception ignore) {
             // best effort; may have been skipRemainingTestsOnFailure

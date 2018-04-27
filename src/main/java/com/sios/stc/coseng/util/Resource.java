@@ -41,6 +41,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
+import com.sios.stc.coseng.run.SeleniumBrowserOptionsJsonExclusions;
 
 import wiremock.com.google.common.io.CharStreams;
 
@@ -73,7 +74,7 @@ public final class Resource {
         }
     }
 
-    public static InputStream getInputStream(final URI uri) {
+    public static InputStream getInputStream(URI uri) {
         String msg = "Resource " + Stringer.wrapBracket(uri) + " is not available";
         InputStream inputStream = null;
         try {
@@ -84,13 +85,9 @@ public final class Resource {
                     inputStream = new FileInputStream(file);
                 }
             } else if (UriUtil.isResourceScheme(canonicalUri)) {
-                if (canonicalUri.isOpaque()) {
-                    Class<?> callerClass = getCallerClass();
-                    msg += " relative to calling class " + Stringer.wrapBracket(callerClass.getName());
-                    inputStream = callerClass.getResourceAsStream(canonicalUri.getPath());
-                } else {
-                    inputStream = Resource.class.getResourceAsStream(canonicalUri.getPath());
-                }
+                Class<?> callerClass = getCallerClass();
+                msg += " relative to calling class " + Stringer.wrapBracket(callerClass.getName());
+                inputStream = callerClass.getResourceAsStream(canonicalUri.getPath());
             } else {
                 inputStream = canonicalUri.toURL().openStream();
             }
@@ -103,7 +100,8 @@ public final class Resource {
     }
 
     private static Class<?> getCallerClass() {
-        String className = Thread.currentThread().getStackTrace()[4].getClassName();
+        int stackLength = Thread.currentThread().getStackTrace().length;
+        String className = Thread.currentThread().getStackTrace()[(stackLength - 1)].getClassName();
         try {
             return Class.forName(className);
         } catch (Exception e) {
@@ -112,15 +110,17 @@ public final class Resource {
     }
 
     public static void saveInputStream(InputStream input, URI uri) {
-        String message = "Unable to save to resource " + Stringer.wrapBracket(uri.getPath());
+        if (input == null || uri == null)
+            throw new IllegalArgumentException("Field input and uri must be provided");
         try {
             URI canonicalUri = UriUtil.getCanonical(uri);
-            if (input == null || !UriUtil.isFileScheme(canonicalUri))
-                throw new IllegalArgumentException();
+            if (!UriUtil.isFileScheme(canonicalUri))
+                throw new IllegalArgumentException(
+                        "Field uri must be of URI scheme type " + Stringer.wrapBracket(UriUtil.Uri.SCHEME_FILE));
             File resourceFile = getFile(canonicalUri);
             FileUtils.copyInputStreamToFile(input, resourceFile);
         } catch (Exception e) {
-            throw new RuntimeException(message, e);
+            throw new RuntimeException("Unable to save to resource " + Stringer.wrapBracket(uri.getPath()), e);
         }
     }
 
@@ -141,6 +141,10 @@ public final class Resource {
     public static Object getObjectFromJson(URI jsonResource, Map<Class<?>, JsonDeserializer<?>> typeDeserializers,
             Class<?> desiredClass, boolean excludeFieldsWithoutExposeAnnotation) {
         try {
+            if (desiredClass == null)
+                throw new IllegalArgumentException("Field desiredClass must be provided");
+            if (jsonResource == null)
+                return desiredClass.newInstance();
             GsonBuilder gsonBuilder = new GsonBuilder();
             if (typeDeserializers != null)
                 for (Class<?> typeClass : typeDeserializers.keySet()) {
@@ -158,8 +162,40 @@ public final class Resource {
                 throw new NullPointerException();
             return object;
         } catch (Exception e) {
-            throw new RuntimeException("Exception reading JSON file " + Stringer.wrapBracket(jsonResource), e);
+            throw new RuntimeException(
+                    "Exception creating object for class " + Stringer.wrapBracket(desiredClass.getName())
+                            + " from JSON file " + Stringer.wrapBracket(jsonResource),
+                    e);
         }
+    }
+
+    public static Object getSeleniumBrowserOptionsObjectFromJson(URI jsonResource, Class<?> desiredClass) {
+        try {
+            if (jsonResource == null)
+                return desiredClass.newInstance();
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.serializeNulls().setExclusionStrategies(new SeleniumBrowserOptionsJsonExclusions());
+            Gson gson = gsonBuilder.create();
+            InputStream inputStream = getInputStream(jsonResource);
+            inputStream.available();
+            Object object = (Object) gson.fromJson(new InputStreamReader(inputStream), desiredClass);
+            if (object == null)
+                throw new NullPointerException();
+            return object;
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Exception creating object for class " + Stringer.wrapBracket(desiredClass.getName())
+                            + " from JSON file " + Stringer.wrapBracket(jsonResource),
+                    e);
+        }
+    }
+
+    public static Object getSeleniumBrowserOptionsJsonFromObject(Object object, Class<?> desiredClass) {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.setPrettyPrinting().serializeNulls()
+                .setExclusionStrategies(new SeleniumBrowserOptionsJsonExclusions());
+        Gson gson = gsonBuilder.create();
+        return gson.toJson(object, desiredClass);
     }
 
     public static String getJsonFromObject(Object object, Map<Class<?>, JsonSerializer<?>> typeSerializers,

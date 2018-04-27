@@ -7,7 +7,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.jsoup.Jsoup;
+import org.testng.ITestResult;
 import org.testng.Reporter;
+import org.testng.SkipException;
 
 import com.sios.stc.coseng.integration.IIntegratorReport;
 import com.sios.stc.coseng.integration.Integrator;
@@ -17,11 +19,11 @@ import com.sios.stc.coseng.util.Stringer;
 public final class Log implements IIntegratorReport {
 
     private Test                       test          = null;
+    private LogAssertions              logAssertions = null;
     public LogAssertions.LogAssert     hardAssert    = null;
     public LogAssertions.LogAssert     ha            = null;
     public LogAssertions.LogSoftAssert softAssert    = null;
     public LogAssertions.LogSoftAssert sa            = null;
-    private LogAssertions              logAssertions = null;
 
     public enum Prefix {
         ASSERTION("+ "), ASSERTION_SOFT("~ "), MESSAGE("# "), TEST_STEP("> "), TEST_STEP_SKIP("- "), TASK("| ");
@@ -88,19 +90,21 @@ public final class Log implements IIntegratorReport {
         notifyIntegrators(logLevel, logMessage, expectedResult, actualResult);
     }
 
-    public void testStep(String step) {
+    public String testStep(String step) {
         String logMessage = Prefix.TEST_STEP.get()
-                + new Stringer("Test " + Stringer.wrapBracket(step)).htmlBold().toString();
+                + new Stringer("Step " + Stringer.wrapBracket(step)).htmlBold().toString();
         results(null, logMessage, null, null);
+        return Jsoup.parse(logMessage).text();
     }
 
-    public void message(String message) {
-        message(message, null);
+    public String message(String message) {
+        return message(message, null);
     }
 
-    public void message(String message, org.apache.logging.log4j.Level logLevel) {
+    public String message(String message, org.apache.logging.log4j.Level logLevel) {
         String logMessage = Prefix.MESSAGE.get() + "Message " + Stringer.wrapBracket(message);
         results(logLevel, logMessage, null, null);
+        return Jsoup.parse(logMessage).text();
     }
 
     public void skipTestForBrowser() {
@@ -112,12 +116,13 @@ public final class Log implements IIntegratorReport {
     }
 
     public void skipTestForBrowser(String message, org.apache.logging.log4j.Level logLevel) {
-        String logMessage = Stringer.htmlItalic(Prefix.TEST_STEP_SKIP.get() + "Skip test near line number "
-                + Stringer.wrapBracket(Thread.currentThread().getStackTrace()[2].getLineNumber()) + ", browser "
+        String logMessage = Stringer.htmlItalic(Prefix.TEST_STEP_SKIP.get() + "Skip test for browser "
                 + Stringer.wrapBracket(test.getSelenium().getBrowser().getType()));
         if (message != null)
             logMessage += Stringer.htmlItalic(", message " + Stringer.wrapBracket(message));
         results(logLevel, logMessage, null, null);
+        test.getTestNg().getContext().getIInvokedMethod().getTestResult().setStatus(ITestResult.SKIP);
+        throw new SkipException(Jsoup.parse(logMessage).text());
     }
 
     public void skipTestForDefect(String defectId) {
@@ -125,14 +130,16 @@ public final class Log implements IIntegratorReport {
     }
 
     public void skipTestForDefect(String defectId, String message) {
-        skipTestForDefect(defectId, message);
+        skipTestForDefect(defectId, message, org.apache.logging.log4j.Level.WARN);
     }
 
     public void skipTestForDefect(String defectId, String message, org.apache.logging.log4j.Level logLevel) {
-        String logMessage = Stringer.htmlItalic(Prefix.TEST_STEP_SKIP.get() + "Skip test near line number "
-                + Stringer.wrapBracket(Thread.currentThread().getStackTrace()[2].getLineNumber()) + ", defect "
+        String logMessage = Stringer.htmlItalic(Prefix.TEST_STEP_SKIP.get() + "Skip test for defect "
                 + Stringer.wrapBracket(defectId) + ", message " + Stringer.wrapBracket(message));
         results(logLevel, logMessage, null, null);
+        test.getTestNg().getContext().getIInvokedMethod().getTestResult().setStatus(ITestResult.SKIP);
+        throw new SkipException(Jsoup.parse(logMessage).text());
+
     }
 
     @Override

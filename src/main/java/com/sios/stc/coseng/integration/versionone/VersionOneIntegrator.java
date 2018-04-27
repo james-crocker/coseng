@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.IInvokedMethod;
+import org.testng.ITestResult;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -409,10 +410,14 @@ public final class VersionOneIntegrator extends Integrator {
 
             /* Get this trigger/phase fields and *add* the pass|fail fields. */
             List<Field> fields = v1.getMethodTest(method).getFields(trigger, phase);
+
             if (method.getTestResult().isSuccess()) {
                 log.debug("Test [{}] method [{}] passed", test.getId(), method.getTestMethod().getMethodName());
                 fields.addAll(v1.getMethodTest(method).getFields(trigger, TestPhase.PASS));
-            } else {
+            } else if (method.getTestResult().getStatus() == ITestResult.SKIP) {
+                log.debug("Test [{}] method [{}] skipped", test.getId(), method.getTestMethod().getMethodName());
+                fields.addAll(v1.getMethodTest(method).getFields(trigger, TestPhase.SKIPPED));
+            } else if (method.getTestResult().getStatus() == ITestResult.FAILURE) {
                 log.debug("Test [{}] method [{}] failed", test.getId(), method.getTestMethod().getMethodName());
                 fields.addAll(v1.getMethodTest(method).getFields(trigger, TestPhase.FAIL));
             }
@@ -568,6 +573,9 @@ public final class VersionOneIntegrator extends Integrator {
             if (!hasValidField(field))
                 return false;
             field = v1.getTest().getField(V1Attr.STATUS.get(), TriggerOn.TESTNGMETHOD, TestPhase.FAIL);
+            if (!hasValidField(field))
+                return false;
+            field = v1.getTest().getField(V1Attr.STATUS.get(), TriggerOn.TESTNGMETHOD, TestPhase.SKIPPED);
             if (!hasValidField(field))
                 return false;
             return true;

@@ -321,7 +321,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
      */
     @Override
     public void onTestSkipped(ITestResult arg0) {
-        // nothing for now
+        test.setSkipped(true);
     }
 
     /*
@@ -408,7 +408,6 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
     @Override
     public void beforeInvocation(IInvokedMethod method, ITestResult testResult) {
         beforeInvocation(method, testResult, null);
-        // nothing for now
     }
 
     /*
@@ -420,7 +419,6 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
     @Override
     public void afterInvocation(IInvokedMethod method, ITestResult testResult) {
         afterInvocation(method, testResult, null);
-        // nothing for now
     }
     /* </IMethodListener> */
 

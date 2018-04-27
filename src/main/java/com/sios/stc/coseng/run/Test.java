@@ -30,6 +30,7 @@ public final class Test {
     private Set<URI> classPaths = null;
 
     private boolean   failed    = false;
+    private boolean   skipped   = false;
     private StopWatch stopWatch = new StopWatch();
 
     public String getId() {
@@ -66,13 +67,21 @@ public final class Test {
         this.failed = failed;
     }
 
+    public boolean isSkipped() {
+        return skipped;
+    }
+
+    public void setSkipped(boolean skipped) {
+        this.skipped = skipped;
+    }
+
     public StopWatch getStopWatch() {
         return stopWatch;
     }
 
     @Override
     public String toString() {
-        return ReflectionToStringBuilder.toStringExclude(this, "failed", "stopWatch");
+        return ReflectionToStringBuilder.toStringExclude(this, "failed", "skipped", "stopWatch");
     }
 
     void validateAndPrepare() {
