@@ -208,14 +208,15 @@ public final class SeleniumWebDriver {
             if (!driverServices.isRunning())
                 throw new IllegalStateException("Web driver service "
                         + Stringer.wrapBracket(driverServices.get().getClass().getName()) + " is not running");
-            // TODO may be out of date
+
             /*
              * Set the file detector for uploads; set early. Setting early ameliorates
-             * absolute pathing issues if set later. FireFox fileUpload (0.19.0 geckodriver,
-             * 53+FF) does not function if setFileDector. Chrome (2.32 chromedriver,
-             * 60+Chrome) and others work as expected with setFileDetector.
+             * absolute pathing issues if set later. FireFox fileUpload (0.20.1 geckodriver
+             * ) does not function if setFileDector. Others work as expected with
+             * setFileDetector.
              */
-            remoteWebDriver.setFileDetector(new LocalFileDetector());
+            if (!Browser.FIREFOX.equals(browser))
+                remoteWebDriver.setFileDetector(new LocalFileDetector());
 
             /* Set dimension or maximize */
             Dimension dimension = test.getSelenium().getBrowser().getDimension();

@@ -108,6 +108,23 @@ public class UriUtil {
         return false;
     }
 
+    public static String getLastName(URI resource) {
+        URI canonicalUri;
+        try {
+            canonicalUri = UriUtil.getCanonical(resource);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        String path = canonicalUri.getPath();
+        if (path == null || path.isEmpty())
+            throw new IllegalArgumentException("Resource URI path must be provided");
+        if (isFileScheme(resource))
+            return new File(resource).getName();
+        if (resource.toString().contains(Uri.PATH_SEPARATOR.get()))
+            return path.substring(path.lastIndexOf(Uri.PATH_SEPARATOR.get()) + 1);
+        return path;
+    }
+
     public static URI concatFiles(URI uri, List<String> resources) throws URISyntaxException, IOException {
         if (uri == null || resources == null) {
             throw new IllegalArgumentException("Field uri and resources must be provided");

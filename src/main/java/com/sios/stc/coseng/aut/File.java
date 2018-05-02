@@ -7,6 +7,7 @@ import org.openqa.selenium.WebElement;
 
 import com.sios.stc.coseng.run.Test;
 import com.sios.stc.coseng.util.Resource;
+import com.sios.stc.coseng.util.UriUtil;
 
 public class File {
 
@@ -21,17 +22,21 @@ public class File {
             throw new IllegalArgumentException("Field uploadElement and resource must be provided");
         if (!uploadElement.isDisplayed() || uploadElement.getAttribute("readonly") != null)
             throw new IllegalStateException("Web element uploadElement must be displayed and not readonly");
+        String name = UriUtil.getLastName(resource);
+        if (name == null || name.isEmpty())
+            throw new IllegalArgumentException("Unable to get resource name");
         try {
             InputStream fileInput = Resource.getInputStream(resource);
             java.io.File resourceDir = Resource.getFile(test.getTestNg().getDirectory().getResources());
-            String fileName = Resource.getFile(resource).getName();
+
             java.io.File localResource = null;
 
             if (saveResource) {
-                localResource = new java.io.File(resourceDir + java.io.File.separator + fileName);
+                localResource = new java.io.File(resourceDir + java.io.File.separator + name);
+            } else {
+                localResource = java.io.File.createTempFile(name, null);
                 localResource.deleteOnExit();
             }
-            localResource = java.io.File.createTempFile(fileName, null);
 
             Resource.saveInputStream(fileInput, localResource.toURI());
             /*
@@ -46,4 +51,5 @@ public class File {
             throw new RuntimeException("Unable to upload file [{}]; assure file exists", e);
         }
     }
+
 }

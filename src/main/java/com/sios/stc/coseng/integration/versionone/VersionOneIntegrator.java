@@ -299,7 +299,6 @@ public final class VersionOneIntegrator extends Integrator {
             TriggerOn trigger = TriggerOn.TESTNGMETHOD;
             TestPhase phase = TestPhase.START;
             IInvokedMethod method = test.getTestNg().getContext().getIInvokedMethod();
-
             log.debug(
                     "TriggerOn [{}], phase [{}], thread [{}], test [{}], testHashCode [{}], method [{}], methodHashCode [{}]",
                     trigger, phase, Thread.currentThread().getId(), test.getId(), test.hashCode(),

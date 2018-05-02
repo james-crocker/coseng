@@ -431,9 +431,6 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
      */
     @Override
     public void beforeInvocation(IInvokedMethod method, ITestResult testResult, ITestContext context) {
-        if (!continueOnFailure())
-            throw new SkipException("Skipping test due to prior failure and isSkipRemainingTestsOnFailure "
-                    + Stringer.wrapBracket(test.getTestNg().isSkipRemainingTestsOnFailure()));
         /*
          * TODO Comment on SuiteXml with parallel=methods and tests with the same
          * classes - ONLY one class instantiation.
@@ -447,6 +444,11 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
             test.getTestNg().getContext().setITestClass(clazz);
         }
         test.getTestNg().getContext().setIInvokedMethod(method);
+        if (!continueOnFailure()) {
+            testResult.setStatus(ITestResult.SKIP);
+            throw new SkipException("Skipping test due to prior failure and isSkipRemainingTestsOnFailure "
+                    + Stringer.wrapBracket(test.getTestNg().isSkipRemainingTestsOnFailure()));
+        }
         TriggerOn trigger = TriggerOn.TESTNGMETHOD;
         TestPhase phase = TestPhase.START;
         logDebug(trigger, phase);
@@ -473,7 +475,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
         if (!isOneWebDriver && Triggers.isTrigger(mode, trigger))
             webDriverAction(WebDriverAction.STOP);
         notifyIntegrators(trigger, phase);
-        if (!testResult.isSuccess() && hasAnyFailure == null)
+        if (!testResult.isSuccess() && testResult.getStatus() != ITestResult.SKIP && hasAnyFailure == null)
             hasAnyFailure = true;
         test.getTestNg().getContext().setIInvokedMethod(null);
     }
