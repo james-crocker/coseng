@@ -17,6 +17,7 @@
 package com.sios.stc.coseng.run;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -109,7 +110,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
     private static final ThreadLocal<Test> staticTest            = new ThreadLocal<Test>();
     private Test                           test                  = null;
     private boolean                        isOneWebDriver        = false;
-    private Boolean                        hasAnyFailure         = null;
+    private AtomicBoolean                  hasAnyFailure         = new AtomicBoolean();
 
     /*-
      * General Behaviors
@@ -475,8 +476,8 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
         if (!isOneWebDriver && Triggers.isTrigger(mode, trigger))
             webDriverAction(WebDriverAction.STOP);
         notifyIntegrators(trigger, phase);
-        if (!testResult.isSuccess() && testResult.getStatus() != ITestResult.SKIP && hasAnyFailure == null)
-            hasAnyFailure = true;
+        if (!testResult.isSuccess() && testResult.getStatus() != ITestResult.SKIP)
+            hasAnyFailure.set(true);
         test.getTestNg().getContext().setIInvokedMethod(null);
     }
     /* </IMethodListener2> */
@@ -517,7 +518,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
 
     private boolean continueOnFailure() {
         boolean skip = test.getTestNg().isSkipRemainingTestsOnFailure();
-        if (hasAnyFailure != null && skip && hasAnyFailure)
+        if (skip && hasAnyFailure.get())
             return false;
         return true;
     }

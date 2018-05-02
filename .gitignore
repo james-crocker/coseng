@@ -1,4 +1,6 @@
 /target/
+/coseng-tests/
+coseng.log
 .classpath
 .project
-.settings/
+/.settings/
