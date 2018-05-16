@@ -93,11 +93,19 @@ public final class RunnableTest implements Runnable {
             Level logLevel = Level.INFO;
             if (test.isFailed())
                 logLevel = Level.ERROR;
-            log.log(logLevel, "Test {} completed {}; elapsed time (hh:mm:ss:ms) {}; web driver started {}, stopped {}",
-                    Stringer.wrapBracket(testId), (test.isFailed() ? "with failures" : "successfully"),
-                    Stringer.wrapBracket(test.getStopWatch().toString()),
+            log.log(logLevel, "Test {} total web driver started {}, stopped {}", Stringer.wrapBracket(testId),
                     Stringer.wrapBracket(test.getSelenium().getWebDriverContext().getStartedWebDrivers()),
                     Stringer.wrapBracket(test.getSelenium().getWebDriverContext().getStoppedWebDrivers()));
+            log.log(Level.INFO, "Test {} elapsed time (hh:mm:ss:ms) {}", Stringer.wrapBracket(testId),
+                    Stringer.wrapBracket(test.getStopWatch().toString()));
+            log.log(Level.INFO,
+                    "Test {} total tests started {}, successful {}, failed {}, skipped {}, failed with successful percentage {}",
+                    Stringer.wrapBracket(testId), Stringer.wrapBracket(test.getTestsStarted()),
+                    Stringer.wrapBracket(test.getTestsSuccessful()), Stringer.wrapBracket(test.getTestsFailed()),
+                    Stringer.wrapBracket(test.getTestsSkipped()),
+                    Stringer.wrapBracket(test.getTestsFailedButWithinSuccessPercentage()));
+            log.log(logLevel, "Test {} completed {} ", Stringer.wrapBracket(testId),
+                    (test.isFailed() ? "with failures" : "successfully"));
         }
     }
 

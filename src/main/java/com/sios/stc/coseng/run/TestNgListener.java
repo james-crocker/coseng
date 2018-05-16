@@ -17,7 +17,6 @@
 package com.sios.stc.coseng.run;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -110,7 +109,6 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
     private static final ThreadLocal<Test> staticTest            = new ThreadLocal<Test>();
     private Test                           test                  = null;
     private boolean                        isOneWebDriver        = false;
-    private AtomicBoolean                  hasAnyFailure         = new AtomicBoolean();
 
     /*-
      * General Behaviors
@@ -302,7 +300,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
      */
     @Override
     public void onTestFailedButWithinSuccessPercentage(ITestResult arg0) {
-        // nothing for now
+        test.incrementTestsFailedButWithinSuccessPercentage();
     }
 
     /*
@@ -312,7 +310,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
      */
     @Override
     public void onTestFailure(ITestResult arg0) {
-        // nothing for now
+        test.incrementTestsFailed();
     }
 
     /*
@@ -322,7 +320,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
      */
     @Override
     public void onTestSkipped(ITestResult arg0) {
-        test.setSkipped(true);
+        test.incrementTestsSkipped();
     }
 
     /*
@@ -332,7 +330,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
      */
     @Override
     public void onTestStart(ITestResult arg0) {
-        // nothing for now
+        test.incrementTestsStarted();
     }
 
     /*
@@ -342,7 +340,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
      */
     @Override
     public void onTestSuccess(ITestResult arg0) {
-        // nothing for now
+        test.incrementTestsSuccessful();
     }
 
     /*
@@ -477,7 +475,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
             webDriverAction(WebDriverAction.STOP);
         notifyIntegrators(trigger, phase);
         if (!testResult.isSuccess() && testResult.getStatus() != ITestResult.SKIP)
-            hasAnyFailure.set(true);
+            test.setHasAnyFailure(true);
         test.getTestNg().getContext().setIInvokedMethod(null);
     }
     /* </IMethodListener2> */
@@ -518,7 +516,7 @@ public final class TestNgListener implements IIntegratorListener, IExecutionList
 
     private boolean continueOnFailure() {
         boolean skip = test.getTestNg().isSkipRemainingTestsOnFailure();
-        if (skip && hasAnyFailure.get())
+        if (skip && test.getHasAnyFailure())
             return false;
         return true;
     }

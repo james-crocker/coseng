@@ -262,10 +262,18 @@ public final class VersionOneIntegrator extends Integrator {
             List<String> updatedDescription = new ArrayList<String>();
             String currentDescription = v1.getBacklog().getDescription();
 
-            updatedDescription.add(Stringer.htmlBold("Test completed ")
-                    + new Stringer((test.isFailed() ? "with failures" : "successfully")).htmlItalic().htmlBold()
-                            .toString()
-                    + "; elapsed time (hh:mm:ss:ms): " + test.getStopWatch().toString() + "; web driver started "
+            updatedDescription.add(Stringer.htmlBold("Test completed")
+                    + new Stringer((test.isFailed() ? " with failures" : " successfully")).htmlItalic().htmlBold()
+                            .toString());
+            updatedDescription.add(Stringer.htmlBold("Test category total:") + " started "
+                    + Stringer.wrapBracket(test.getTestsStarted()) + " successful "
+                    + Stringer.wrapBracket(test.getTestsSuccessful()) + " failed "
+                    + Stringer.wrapBracket(test.getTestsFailed()) + " skipped "
+                    + Stringer.wrapBracket(test.getTestsSkipped()) + " failed with successful percentage "
+                    + Stringer.wrapBracket(test.getTestsFailedButWithinSuccessPercentage()));
+            updatedDescription
+                    .add(Stringer.htmlBold("Elapsed time") + " (hh:mm:ss:ms): " + test.getStopWatch().toString());
+            updatedDescription.add(Stringer.htmlBold("Web Driver") + " started "
                     + Stringer.wrapBracket(test.getSelenium().getWebDriverContext().getStartedWebDrivers())
                     + ", stopped "
                     + Stringer.wrapBracket(test.getSelenium().getWebDriverContext().getStoppedWebDrivers()));

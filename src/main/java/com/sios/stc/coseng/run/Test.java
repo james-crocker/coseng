@@ -5,6 +5,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.time.StopWatch;
@@ -29,9 +31,14 @@ public final class Test {
     @Expose
     private Set<URI> classPaths = null;
 
-    private boolean   failed    = false;
-    private boolean   skipped   = false;
-    private StopWatch stopWatch = new StopWatch();
+    private boolean       failed                                = false;
+    private AtomicBoolean hasAnyFailure                         = new AtomicBoolean();
+    private AtomicInteger testsStarted                          = new AtomicInteger();
+    private AtomicInteger testsSuccessful                       = new AtomicInteger();
+    private AtomicInteger testsFailed                           = new AtomicInteger();
+    private AtomicInteger testsSkipped                          = new AtomicInteger();
+    private AtomicInteger testsFailedButWithinSuccessPercentage = new AtomicInteger();
+    private StopWatch     stopWatch                             = new StopWatch();
 
     public String getId() {
         return id;
@@ -67,12 +74,52 @@ public final class Test {
         this.failed = failed;
     }
 
-    public boolean isSkipped() {
-        return skipped;
+    public void setHasAnyFailure(boolean hasFailure) {
+        hasAnyFailure.set(hasFailure);
     }
 
-    public void setSkipped(boolean skipped) {
-        this.skipped = skipped;
+    public boolean getHasAnyFailure() {
+        return hasAnyFailure.get();
+    }
+
+    public int getTestsStarted() {
+        return testsStarted.get();
+    }
+
+    public void incrementTestsStarted() {
+        testsStarted.getAndIncrement();
+    }
+
+    public int getTestsSuccessful() {
+        return testsSuccessful.get();
+    }
+
+    public void incrementTestsSuccessful() {
+        testsSuccessful.getAndIncrement();
+    }
+
+    public int getTestsFailed() {
+        return testsFailed.get();
+    }
+
+    public void incrementTestsFailed() {
+        testsFailed.getAndIncrement();
+    }
+
+    public int getTestsSkipped() {
+        return testsSkipped.get();
+    }
+
+    public void incrementTestsSkipped() {
+        testsSkipped.getAndIncrement();
+    }
+
+    public int getTestsFailedButWithinSuccessPercentage() {
+        return testsFailedButWithinSuccessPercentage.get();
+    }
+
+    public void incrementTestsFailedButWithinSuccessPercentage() {
+        testsFailedButWithinSuccessPercentage.getAndIncrement();
     }
 
     public StopWatch getStopWatch() {
@@ -81,7 +128,8 @@ public final class Test {
 
     @Override
     public String toString() {
-        return ReflectionToStringBuilder.toStringExclude(this, "failed", "skipped", "stopWatch");
+        return ReflectionToStringBuilder.toStringExclude(this, "failed", "hasAnyFailure", "testsStarted",
+                "testsSuccessful", "testsFailed", "testsSkipped", "testsFailedButWithinSuccessPercentage", "stopWatch");
     }
 
     void validateAndPrepare() {
