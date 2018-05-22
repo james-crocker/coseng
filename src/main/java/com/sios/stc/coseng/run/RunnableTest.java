@@ -16,6 +16,7 @@
  */
 package com.sios.stc.coseng.run;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -83,19 +84,22 @@ public final class RunnableTest implements Runnable {
             int startedWebDriver = test.getSelenium().getWebDriverContext().getStartedWebDrivers();
             int stoppedWebDriver = test.getSelenium().getWebDriverContext().getStoppedWebDrivers();
             if (startedWebDriver != stoppedWebDriver) {
-                log.error("Web driver started/stopped count unequal");
                 test.setFailed(true);
             }
+            Level logLevel = Level.INFO;
+            if (startedWebDriver != stoppedWebDriver) {
+                logLevel = Level.ERROR;
+                test.setFailed(true);
+            }
+            log.log(logLevel, "Test {} total web driver started {}, stopped {} {}", Stringer.wrapBracket(testId),
+                    Stringer.wrapBracket(test.getSelenium().getWebDriverContext().getStartedWebDrivers()),
+                    Stringer.wrapBracket(test.getSelenium().getWebDriverContext().getStoppedWebDrivers()),
+                    (startedWebDriver != stoppedWebDriver ? "; Web driver started/stopped not equal"
+                            : StringUtils.EMPTY));
             /* Notify integrators of final results */
             for (Integrator i : test.getTestNg().getIntegrators()) {
                 i.actOn(TriggerOn.COSENG, TestPhase.FINISH);
             }
-            Level logLevel = Level.INFO;
-            if (test.isFailed())
-                logLevel = Level.ERROR;
-            log.log(logLevel, "Test {} total web driver started {}, stopped {}", Stringer.wrapBracket(testId),
-                    Stringer.wrapBracket(test.getSelenium().getWebDriverContext().getStartedWebDrivers()),
-                    Stringer.wrapBracket(test.getSelenium().getWebDriverContext().getStoppedWebDrivers()));
             log.log(Level.INFO, "Test {} elapsed time (hh:mm:ss:ms) {}", Stringer.wrapBracket(testId),
                     Stringer.wrapBracket(test.getStopWatch().toString()));
             log.log(Level.INFO,
@@ -104,6 +108,9 @@ public final class RunnableTest implements Runnable {
                     Stringer.wrapBracket(test.getTestsSuccessful()), Stringer.wrapBracket(test.getTestsFailed()),
                     Stringer.wrapBracket(test.getTestsSkipped()),
                     Stringer.wrapBracket(test.getTestsFailedButWithinSuccessPercentage()));
+            logLevel = Level.INFO;
+            if (test.isFailed())
+                logLevel = Level.ERROR;
             log.log(logLevel, "Test {} completed {} ", Stringer.wrapBracket(testId),
                     (test.isFailed() ? "with failures" : "successfully"));
         }
