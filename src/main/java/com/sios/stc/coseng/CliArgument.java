@@ -1,68 +1,93 @@
+/*
+ * Concurrent Selenium TestNG (COSENG)
+ * Copyright (c) 2013-2018 SIOS Technology Corp.  All rights reserved.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.sios.stc.coseng;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
-import com.sios.stc.coseng.exceptions.CosengConfigException;
 import com.sios.stc.coseng.run.TestJsonDeserializer;
 import com.sios.stc.coseng.run.Tests;
 import com.sios.stc.coseng.util.Resource;
 import com.sios.stc.coseng.util.Stringer;
 
-public final class CliArgument {
+final class CliArgument {
 
-    /*
-     * Parse the command line arguments and attempt to get the referenced resources.
-     * Print help usage and exit with value [0] when -help option set. Print help
-     * usage and exit with value [1] for mis-configured options.
-     *
-     * @param args the args
-     * 
-     * @throws CosengException the coseng exception on parse errors and absent or
-     * invalid resources
-     * 
-     * @see com.sios.stc.coseng.config.BrowserNode.webdriver.node.SeleniumNode
-     * 
-     * @see com.sios.stc.coseng.config.Test
-     * 
-     * @see com.sios.stc.coseng.tests.Tests
-     * 
-     * @since 2.0
-     * 
-     * @version.coseng
-     */
     static Tests getTests(String[] args) {
         URI testsJsonResourceUri = null;
-        HelpFormatter formatter = new HelpFormatter();
-        String optHelp = "help";
-        String optTest = "test";
-        String helpUsage = "Valid COSENG command line options.";
-        /* Define the accepted command line options */
+        boolean hasHelp = false;
+        HelpFormatter helpFormatter = new HelpFormatter();
+        helpFormatter.setWidth(120);
+        helpFormatter.setLeftPadding(0);
+
+        String header = "Concurrent Selenium TestNG (COSENG) provides concurrent Selenium web driver lifecycle "
+                + "management leveraging the TestNG testing framework.";
+        String footer = "Documentation: https://github.com/siostechcorp/coseng/wiki";
+
         Options options = new Options();
-        options.addOption(optHelp, false, "Help");
-        options.addOption(optTest, true, "Tests JSON configuration resource URI");
+        String optHelp = "help";
+        String unoHelp = "h";
+        Option helpOption = Option.builder(unoHelp).longOpt(optHelp).hasArg(false).required(false)
+                .desc("Program usage, help and documentation information").build();
+        options.addOption(helpOption);
+
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cli = null;
+
+        /*
+         * As -t is required it would throw an exception if user only providing -h for
+         * help. Parse twice and flag if help requested.
+         */
         try {
-            CommandLineParser parser = new DefaultParser();
-            CommandLine cli = parser.parse(options, args);
-            /* Get the option values */
-            /* Check option expectations */
-            if (cli.hasOption(optHelp)) {
-                formatter.printHelp(helpUsage, options);
-            } else {
-                if (!cli.hasOption(optTest) || cli.getOptionValue(optTest).isEmpty()) {
-                    System.out.println("-" + optTest + " <arg> required");
-                    System.exit(ExitStatus.FAILURE.getStatus());
-                }
-                testsJsonResourceUri = new URI(cli.getOptionValue(optTest));
+            cli = parser.parse(options, args);
+            if (cli.hasOption(unoHelp) || cli.hasOption(optHelp)) {
+                hasHelp = true;
             }
+        } catch (ParseException e) {
+            // do nothing
+        }
+
+        String optTests = "tests";
+        String unoTests = "t";
+        Option testsOption = Option.builder(unoTests).longOpt(optTests).hasArg(true).required(true)
+                .desc("Tests JSON configuration resource URI").build();
+        options.addOption(testsOption);
+
+        try {
+            cli = parser.parse(options, args);
+            testsJsonResourceUri = new URI(cli.getOptionValue(optTests));
             return (Tests) Resource.getObjectFromJson(testsJsonResourceUri, TestJsonDeserializer.get(), Tests.class);
-        } catch (Exception e) {
-            throw new CosengConfigException(
+        } catch (ParseException e) {
+            if (hasHelp) {
+                helpFormatter.printHelp("coseng", header, options, footer, true);
+                System.exit(ExitStatus.SUCCESS.getStatus());
+                return null;
+            } else {
+                throw new IllegalArgumentException(e);
+            }
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(
                     "Unable to parse TestsConfig JSON resource " + Stringer.wrapBracket(testsJsonResourceUri), e);
         }
     }

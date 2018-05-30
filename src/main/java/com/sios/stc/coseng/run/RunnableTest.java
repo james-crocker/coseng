@@ -1,6 +1,6 @@
 /*
  * Concurrent Selenium TestNG (COSENG)
- * Copyright (c) 2013-2017 SIOS Technology Corp.  All rights reserved.
+ * Copyright (c) 2013-2018 SIOS Technology Corp.  All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,6 +108,12 @@ public final class RunnableTest implements Runnable {
                     Stringer.wrapBracket(test.getTestsSuccessful()), Stringer.wrapBracket(test.getTestsFailed()),
                     Stringer.wrapBracket(test.getTestsSkipped()),
                     Stringer.wrapBracket(test.getTestsFailedButWithinSuccessPercentage()));
+            log.log(Level.INFO,
+                    "Test {} total hard assertions successful {}, failed {}; soft assertions successful {}, failed {}",
+                    Stringer.wrapBracket(testId), Stringer.wrapBracket(test.getHardAssertSuccessTotal()),
+                    Stringer.wrapBracket(test.getHardAssertFailureTotal()),
+                    Stringer.wrapBracket(test.getSoftAssertSuccessTotal()),
+                    Stringer.wrapBracket(test.getSoftAssertFailureTotal()));
             logLevel = Level.INFO;
             if (test.isFailed())
                 logLevel = Level.ERROR;

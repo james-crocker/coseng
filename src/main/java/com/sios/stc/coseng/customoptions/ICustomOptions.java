@@ -14,24 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.sios.stc.coseng.run;
+package com.sios.stc.coseng.customoptions;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.net.URI;
 
-public final class ExceptionThreadFactory implements ThreadFactory {
+import com.sios.stc.coseng.gson.Serializers;
+import com.sios.stc.coseng.run.Test;
 
-    private Thread.UncaughtExceptionHandler handler;
+public interface ICustomOptions {
 
-    protected ExceptionThreadFactory() {
-        this.handler = new ExceptionThreadHandler();
-    }
+    public void validateAndPrepare(Test test, Serializers serializers, URI configResource);
 
-    @Override
-    public Thread newThread(Runnable runnable) {
-        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-        thread.setUncaughtExceptionHandler(handler);
-        return thread;
-    }
+    public Serializers getSerializers();
 
 }

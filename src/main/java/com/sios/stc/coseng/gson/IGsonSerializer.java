@@ -14,24 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.sios.stc.coseng.run;
+package com.sios.stc.coseng.gson;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.util.Map;
 
-public final class ExceptionThreadFactory implements ThreadFactory {
+import com.google.gson.JsonSerializer;
 
-    private Thread.UncaughtExceptionHandler handler;
+public interface IGsonSerializer {
 
-    protected ExceptionThreadFactory() {
-        this.handler = new ExceptionThreadHandler();
-    }
-
-    @Override
-    public Thread newThread(Runnable runnable) {
-        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-        thread.setUncaughtExceptionHandler(handler);
-        return thread;
-    }
+    public Map<Class<?>, JsonSerializer<?>> get();
 
 }

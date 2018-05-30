@@ -1,6 +1,6 @@
 /*
  * Concurrent Selenium TestNG (COSENG)
- * Copyright (c) 2013-2017 SIOS Technology Corp.  All rights reserved.
+ * Copyright (c) 2013-2018 SIOS Technology Corp.  All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sios.stc.coseng.Triggers.TestPhase;
 import com.sios.stc.coseng.Triggers.TriggerOn;
+import com.sios.stc.coseng.gson.Serializers;
 import com.sios.stc.coseng.integration.Integrator;
 import com.sios.stc.coseng.integration.versionone.Common.Separator;
 import com.sios.stc.coseng.integration.versionone.Common.V1Asset;
@@ -68,16 +69,16 @@ public final class VersionOneIntegrator extends Integrator {
 
     private static final String INTEGRATOR_NAME = "VersionOne";
 
-    private Test       test = null;
-    private VersionOne v1   = null;
-
-    private V1Connector connector  = null;
-    private IServices   iServices  = null;
-    private Oid         projectOid = null;
-    private Oid         sprintOid  = null;
-    private Oid         backlogOid = null;
-    private IAssetType  iBacklog   = null;
-    private IAssetType  iTest      = null;
+    private Test        test        = null;
+    private VersionOne  v1          = null;
+    private Serializers serializers = null;
+    private V1Connector connector   = null;
+    private IServices   iServices   = null;
+    private Oid         projectOid  = null;
+    private Oid         sprintOid   = null;
+    private Oid         backlogOid  = null;
+    private IAssetType  iBacklog    = null;
+    private IAssetType  iTest       = null;
 
     private boolean hasUpdatedBacklogDescription = false;
 
@@ -90,14 +91,16 @@ public final class VersionOneIntegrator extends Integrator {
     }
 
     @Override
-    public void validateAndPrepare(Test test, URI v1Resource) {
-        v1 = (VersionOne) Resource.getObjectFromJson(v1Resource, VersionOneJsonDeserializer.getStatic(),
-                VersionOne.class);
+    public void validateAndPrepare(Test test, Serializers serializers, URI v1Resource) {
+        if (test == null | serializers == null || serializers.getGsonDeserializer() == null || v1Resource == null)
+            throw new IllegalArgumentException("Fields test, serializers and v1Resource must be provided");
+        this.serializers = serializers;
+        VersionOneJsonDeserializer v1deserializer = (VersionOneJsonDeserializer) serializers.getGsonDeserializer();
+        v1 = (VersionOne) Resource.getObjectFromJson(v1Resource, v1deserializer.get(), VersionOne.class);
         /* Validate the connector */
-        if (test == null || v1 == null || v1.getVersion() == null || v1.getInstanceUrl() == null
-                || v1.getAccessToken() == null || v1.getApplicationName() == null || v1.getProjectName() == null
-                || v1.getSprintName() == null || v1.getBacklog() == null || v1.getTest() == null
-                || !hasRequiredFields())
+        if (v1 == null || v1.getVersion() == null || v1.getInstanceUrl() == null || v1.getAccessToken() == null
+                || v1.getApplicationName() == null || v1.getProjectName() == null || v1.getSprintName() == null
+                || v1.getBacklog() == null || v1.getTest() == null || !hasRequiredFields())
             throw new IllegalArgumentException("Configuration parameters misconfigured");
         String version = v1.getVersion();
         URL instanceUrl = v1.getInstanceUrl();
@@ -216,6 +219,11 @@ public final class VersionOneIntegrator extends Integrator {
 
     }
 
+    @Override
+    public Serializers getSerializers() {
+        return serializers;
+    }
+
     private void onExecutionStart() {
         try {
             TriggerOn trigger = TriggerOn.TESTNGEXECUTION;
@@ -271,6 +279,11 @@ public final class VersionOneIntegrator extends Integrator {
                     + Stringer.wrapBracket(test.getTestsFailed()) + " skipped "
                     + Stringer.wrapBracket(test.getTestsSkipped()) + " failed with successful percentage "
                     + Stringer.wrapBracket(test.getTestsFailedButWithinSuccessPercentage()));
+            updatedDescription.add(Stringer.htmlBold("Test assertion total:") + " hard assertion successful "
+                    + Stringer.wrapBracket(test.getHardAssertSuccessTotal()) + " failed "
+                    + Stringer.wrapBracket(test.getHardAssertFailureTotal()) + "; soft assertion successful "
+                    + Stringer.wrapBracket(test.getSoftAssertSuccessTotal()) + " failed "
+                    + Stringer.wrapBracket(test.getSoftAssertFailureTotal()));
             updatedDescription
                     .add(Stringer.htmlBold("Elapsed time") + " (hh:mm:ss:ms): " + test.getStopWatch().toString());
             updatedDescription.add(Stringer.htmlBold("Web Driver") + " started "

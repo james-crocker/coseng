@@ -1,6 +1,6 @@
 /*
  * Concurrent Selenium TestNG (COSENG)
- * Copyright (c) 2013-2017 SIOS Technology Corp.  All rights reserved.
+ * Copyright (c) 2013-2018 SIOS Technology Corp.  All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,18 +30,12 @@ public final class RunTests extends CosengTests {
 
     /**
      * The main method for executing Concurrent Selenium TestNG (COSENG) suites.
-     * Requires a Tests JSON resource and an optional Node JSON resource. Extends
-     * CosengTests so as to keep the majority of com.sios.stc.coseng.run private or
-     * protected.
+     * Requires a Tests JSON resource.
      *
      * @param args
      *            the command line arguments to configure a COSENG test execution;
-     *            -help for usage and options
-     * @see com.sios.stc.coseng.run.CosengTests#with(String[])
-     * @see com.sios.stc.coseng.run.BrowserNode.browser.SeleniumNode
-     * @see com.sios.stc.coseng.run.Test
-     * @see com.sios.stc.coseng.run.Tests
-     * @since 2.0
+     *            -help for usage.
+     * @since 3.0.0
      * @version.coseng
      */
 

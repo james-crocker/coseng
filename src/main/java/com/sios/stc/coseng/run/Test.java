@@ -1,3 +1,19 @@
+/*
+ * Concurrent Selenium TestNG (COSENG)
+ * Copyright (c) 2013-2018 SIOS Technology Corp.  All rights reserved.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.sios.stc.coseng.run;
 
 import java.io.IOException;
@@ -31,14 +47,18 @@ public final class Test {
     @Expose
     private Set<URI> classPaths = null;
 
-    private boolean       failed                                = false;
-    private AtomicBoolean hasAnyFailure                         = new AtomicBoolean();
-    private AtomicInteger testsStarted                          = new AtomicInteger();
-    private AtomicInteger testsSuccessful                       = new AtomicInteger();
-    private AtomicInteger testsFailed                           = new AtomicInteger();
-    private AtomicInteger testsSkipped                          = new AtomicInteger();
-    private AtomicInteger testsFailedButWithinSuccessPercentage = new AtomicInteger();
-    private StopWatch     stopWatch                             = new StopWatch();
+    private boolean                    failed                                = false;
+    private static final AtomicBoolean hasAnyFailure                         = new AtomicBoolean();
+    private static final AtomicInteger testsStarted                          = new AtomicInteger();
+    private static final AtomicInteger testsSuccessful                       = new AtomicInteger();
+    private static final AtomicInteger testsFailed                           = new AtomicInteger();
+    private static final AtomicInteger testsSkipped                          = new AtomicInteger();
+    private static final AtomicInteger testsFailedButWithinSuccessPercentage = new AtomicInteger();
+    private static final AtomicInteger hardAssertSuccessTotal                = new AtomicInteger();
+    private static final AtomicInteger hardAssertFailureTotal                = new AtomicInteger();
+    private static final AtomicInteger softAssertSuccessTotal                = new AtomicInteger();
+    private static final AtomicInteger softAssertFailureTotal                = new AtomicInteger();
+    private StopWatch                  stopWatch                             = new StopWatch();
 
     public String getId() {
         return id;
@@ -120,6 +140,38 @@ public final class Test {
 
     public void incrementTestsFailedButWithinSuccessPercentage() {
         testsFailedButWithinSuccessPercentage.getAndIncrement();
+    }
+
+    public int getHardAssertSuccessTotal() {
+        return hardAssertSuccessTotal.get();
+    }
+
+    public int incrementHardAssertSuccessTotal() {
+        return hardAssertSuccessTotal.getAndIncrement();
+    }
+
+    public int getHardAssertFailureTotal() {
+        return hardAssertFailureTotal.get();
+    }
+
+    public int incrementHardAssertFailureTotal() {
+        return hardAssertFailureTotal.getAndIncrement();
+    }
+
+    public int getSoftAssertSuccessTotal() {
+        return softAssertSuccessTotal.get();
+    }
+
+    public int incrementSoftAssertSuccessTotal() {
+        return softAssertSuccessTotal.getAndIncrement();
+    }
+
+    public int getSoftAssertFailureTotal() {
+        return softAssertFailureTotal.get();
+    }
+
+    public int incrementSoftAssertFailureTotal() {
+        return softAssertFailureTotal.getAndIncrement();
     }
 
     public StopWatch getStopWatch() {

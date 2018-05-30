@@ -14,24 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.sios.stc.coseng.run;
+package com.sios.stc.coseng.gson;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+public class Serializers {
 
-public final class ExceptionThreadFactory implements ThreadFactory {
+    private Deserializer deserializer;
+    private Serializer   serializer;
 
-    private Thread.UncaughtExceptionHandler handler;
-
-    protected ExceptionThreadFactory() {
-        this.handler = new ExceptionThreadHandler();
+    public Deserializer getGsonDeserializer() {
+        return deserializer;
     }
 
-    @Override
-    public Thread newThread(Runnable runnable) {
-        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-        thread.setUncaughtExceptionHandler(handler);
-        return thread;
+    public void setGsonDeserializer(Deserializer deserializer) {
+        this.deserializer = deserializer;
+    }
+
+    public Serializer getGsonSerializer() {
+        return serializer;
+    }
+
+    public void setGsonSerializer(Serializer serializer) {
+        this.serializer = serializer;
     }
 
 }

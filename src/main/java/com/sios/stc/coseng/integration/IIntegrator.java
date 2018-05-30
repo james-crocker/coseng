@@ -1,6 +1,6 @@
 /*
  * Concurrent Selenium TestNG (COSENG)
- * Copyright (c) 2013-2017 SIOS Technology Corp.  All rights reserved.
+ * Copyright (c) 2013-2018 SIOS Technology Corp.  All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.net.URI;
 
 import com.sios.stc.coseng.Triggers.TestPhase;
 import com.sios.stc.coseng.Triggers.TriggerOn;
+import com.sios.stc.coseng.gson.Serializers;
 import com.sios.stc.coseng.run.Test;
 
 /**
@@ -30,7 +31,7 @@ import com.sios.stc.coseng.run.Test;
  */
 public interface IIntegrator {
 
-    public void validateAndPrepare(Test test, URI configResource);
+    public void validateAndPrepare(Test test, Serializers serializers, URI configResource);
 
     public void actOn(TriggerOn trigger, TestPhase phase);
 
@@ -39,5 +40,7 @@ public interface IIntegrator {
     public void addTestStepExpectedResult(String stepMessage, String expetedResult);
 
     public void addTestStepActualResult(String stepMessage, String actualResult);
+
+    public Serializers getSerializers();
 
 }

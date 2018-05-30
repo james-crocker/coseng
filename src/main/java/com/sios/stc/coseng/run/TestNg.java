@@ -1,3 +1,19 @@
+/*
+ * Concurrent Selenium TestNG (COSENG)
+ * Copyright (c) 2013-2018 SIOS Technology Corp.  All rights reserved.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.sios.stc.coseng.run;
 
 import java.io.File;
@@ -44,8 +60,10 @@ public final class TestNg {
     @Expose
     private Integer  verbosity                   = null;
 
-    private Directory            directory   = null;
-    private List<Integrator>     integrators = new ArrayList<Integrator>();
+    private Directory        directory   = null;
+    private List<Integrator> integrators = new ArrayList<Integrator>();
+    // private List<Serializers> integratorSerializers = new
+    // ArrayList<Serializers>();
     private List<XmlSuite>       xmlSuites   = new ArrayList<XmlSuite>();
     private TestNgContext        context     = new TestNgContext();
     private Map<String, Integer> suiteNameId = new LinkedHashMap<String, Integer>();
@@ -62,12 +80,37 @@ public final class TestNg {
 
     public Integrator getIntegrator(Class<?> clazz) {
         for (Integrator integrator : getIntegrators()) {
-            if (integrator.getClass().equals(clazz)) {
+            if (integrator.getClass().equals(clazz))
                 return integrator;
-            }
         }
         return null;
     }
+    //
+    // public List<Serializers> getIntegratorGsonSerializers() {
+    // List<Serializers> newList = new ArrayList<Serializers>();
+    // newList.addAll(integratorSerializers);
+    // return newList;
+    // }
+    //
+    // public Serializer getIntegratorGsonSerializer(Class<?> clazz) {
+    // for (Serializers gsonSerializer : getIntegratorGsonSerializers()) {
+    // Serializer serializer = gsonSerializer.getGsonSerializer();
+    // if (serializer != null && serializer.getClass().equals(clazz))
+    // return serializer;
+    // }
+    // return null;
+    //
+    // }
+    //
+    // public Deserializer getIntegratorGsonDeserializer(Class<?> clazz) {
+    // for (Serializers gsonSerializer : getIntegratorGsonSerializers()) {
+    // Deserializer serializer = gsonSerializer.getGsonDeserializer();
+    // if (serializer != null && serializer.getClass().equals(clazz))
+    // return serializer;
+    // }
+    // return null;
+    //
+    // }
 
     public int getVerbosity() {
         return verbosity.intValue();

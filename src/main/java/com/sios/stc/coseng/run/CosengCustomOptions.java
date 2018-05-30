@@ -23,40 +23,32 @@ import java.util.Set;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import com.google.gson.annotations.Expose;
+import com.sios.stc.coseng.customoptions.CustomOptions;
 import com.sios.stc.coseng.exceptions.CosengConfigException;
 import com.sios.stc.coseng.gson.Serializers;
-import com.sios.stc.coseng.integration.Integrator;
 import com.sios.stc.coseng.util.Resource;
 import com.sios.stc.coseng.util.UriUtil;
 
-public final class TestNgIntegrator {
+public final class CosengCustomOptions {
 
     @Expose
-    private String         name                = null;
+    private Set<URI>       classPaths       = null;
     @Expose
-    private Set<URI>       classPaths          = null;
+    private String         optionsClassName = null;
     @Expose
-    private String         integratorClassName = null;
+    private GsonSerializer gsonSerializer   = null;
     @Expose
-    private GsonSerializer gsonSerializer      = null;
-    @Expose
-    private URI            configJson          = null;
-
-    public String getName() {
-        return name;
-    }
+    private URI            optionsJson      = null;
 
     @Override
     public String toString() {
         return ReflectionToStringBuilder.toString(this);
     }
 
-    Integrator validateAndPrepare(Test test) {
-        /* classPath, gsonSerializer and config may be null */
+    CustomOptions validateAndPrepare(Test test) {
         try {
-            if (name == null || name.isEmpty() || integratorClassName == null || integratorClassName.isEmpty()
-                    || configJson == null)
-                throw new IllegalArgumentException("Field name, integratorClassName and configJson must be provided");
+            if (optionsClassName == null || optionsClassName.isEmpty() || optionsJson == null)
+                throw new IllegalArgumentException("Field optionsClassName and optionsJson must be provided");
             if (classPaths != null) {
                 if (classPaths.contains(null))
                     throw new IllegalArgumentException("Field classPaths may not contain null elements");
@@ -70,14 +62,14 @@ public final class TestNgIntegrator {
                 }
             }
             /* Get the concrete class */
-            Class<?> integratorClass = Class.forName(integratorClassName);
-            Integrator integrator = (Integrator) integratorClass.newInstance();
-            configJson = UriUtil.getCanonical(configJson);
+            Class<?> optionsClass = Class.forName(optionsClassName);
+            CustomOptions options = (CustomOptions) optionsClass.newInstance();
+            optionsJson = UriUtil.getCanonical(optionsJson);
             Serializers serializers = null;
             if (gsonSerializer != null)
                 serializers = gsonSerializer.validateAndPrepare();
-            integrator.validateAndPrepare(test, serializers, configJson);
-            return integrator;
+            options.validateAndPrepare(test, serializers, optionsJson);
+            return options;
         } catch (Exception e) {
             throw new CosengConfigException(e);
         }
